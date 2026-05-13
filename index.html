@@ -665,7 +665,10 @@ function updatePaceState({
     }
 
     // ===== State =====
-    const STORAGE_KEY = "pace-test-tom:history-v1";
+    function storageSafeRouteName(name) {
+      return String(name || "route").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+    }
+    const STORAGE_KEY = `pace-test:${storageSafeRouteName(ROUTE_NAME)}:${Math.round(TOTAL_KM)}km:v1`;
     function loadHistory() {
       try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"); }
       catch (e) { return []; }
