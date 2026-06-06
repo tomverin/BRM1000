@@ -89,7 +89,7 @@
     </tr></thead><tbody>
     <tr>
     <td><strong>Glance</strong></td>
-    <td>Lecture rapide : km, prochain ravito, eau/solide/service, actions course</td>
+    <td>Lecture rapide : km, prochain ravito, eau/solide/service, refresh GPS</td>
     </tr>
     <tr>
     <td><strong>Carte</strong></td>
@@ -109,33 +109,17 @@
     <li><strong>Hors trace</strong> : distance affichée en mètres ; reste sur la route pour le km course.</li>
     <li>Badge 📍 en haut : état GPS (fix récent ou en attente).</li>
     </ul>
-    <p><strong>Conseil</strong> : refresh au départ, régulièrement en roulant (toutes les 15–30 min selon besoin), et <strong>systématiquement</strong> en quittant un CP ou ravito.</p>
+    <p><strong>Conseil</strong> : refresh au départ, puis régulièrement en roulant (toutes les 15–30 min). Après un long arrêt, un refresh suffit : l&#x27;app gère la pause automatiquement.</p>
     <hr>
-    <h2>Actions course</h2>
-    <table><thead><tr>
-    <th>Bouton</th>
-    <th>Quand l&#x27;utiliser</th>
-    </tr></thead><tbody>
-    <tr>
-    <td><strong>Refresh GPS</strong></td>
-    <td>Position + calcul du rythme (consultation normale)</td>
-    </tr>
-    <tr>
-    <td><strong>Pause / ravito</strong></td>
-    <td>Tu t&#x27;arrêtes (CP, magasin, sieste) — ancre une pause sans polluer le ratio</td>
-    </tr>
-    <tr>
-    <td><strong>Je repars maintenant</strong></td>
-    <td><strong>Après</strong> une pause : nouvelle ancre de départ pour les ETAs, <strong>sans</strong> recalculer le ratio sur le temps arrêté</td>
-    </tr>
-    <tr>
-    <td><strong>Terminer course</strong></td>
-    <td>Fin officielle : fige l&#x27;historique, plus de refresh</td>
-    </tr>
-    </tbody></table>
-    <h3>Pause détectée automatiquement</h3>
-    <p>Si un segment est <strong>beaucoup plus lent</strong> que prévu (café, photo…), une <strong>bannière</strong> propose d&#x27;exclure ce temps du ratio (« Inclure quand même » si tu veux le garder).</p>
-    <p>Près des <strong>checkpoints</strong> (300 m), les pauses sont en général <strong>exclues automatiquement</strong> du calcul de rythme.</p>
+    <h2>Détection automatique des pauses</h2>
+    <p>Pas de bouton pause à appuyer. L&#x27;algorithme analyse chaque segment entre deux refresh :</p>
+    <ol>
+    <li><strong>Pause évidente</strong> (temps réel &gt;&gt; temps prévu, typiquement &gt; 15 min de « surplus ») → le segment est <strong>exclu du ratio</strong> automatiquement.</li>
+    <li><strong>Près d&#x27;un CP ou POI</strong> (300 m / 150 m) → exclusion automatique encore plus fiable (ravito, contrôle).</li>
+    <li><strong>Bannière informative</strong> : « Pause détectée — exclue du rythme ». Tu n&#x27;as rien à faire.</li>
+    <li><strong>Inclure quand même</strong> : si l&#x27;app s&#x27;est trompée (montée lente confondue avec pause), tu peux forcer l&#x27;inclusion du segment dans le ratio.</li>
+    </ol>
+    <p>Terrain technique lent (hors bitume / gravel) : impact rythme <strong>atténué</strong> — peu pertinent sur ce BRM 100 % bitume.</p>
     <hr>
     <h2>Rythme adaptatif et ETA</h2>
     <ul>
@@ -238,7 +222,7 @@
     <li>Pas de suivi live permanent (choix batterie).</li>
     <li>POI issus d&#x27;OpenStreetMap / OnRouteMap : <strong>vérifier sur place</strong> (horaires, eau réellement dispo).</li>
     <li>Une seule trace : parcours <strong>non bouclé</strong> (1022 km linéaires).</li>
-    <li>Après « Terminer course », les refresh GPS sont ignorés.</li>
+    <li>Détection de pause heuristique : micro-arrêts &lt; ~15 min peuvent encore influencer le ratio ; refresh espacés après un ravito aident.</li>
     </ul>
     <hr>
     <h2>Dépannage</h2>
@@ -260,7 +244,11 @@
     </tr>
     <tr>
     <td>ETA incohérent après pause</td>
-    <td><strong>Je repars maintenant</strong>, puis refresh GPS 5–10 km plus loin</td>
+    <td>Attendre 5–10 km de roulage + refresh ; la pause est normalement déjà exclue</td>
+    </tr>
+    <tr>
+    <td>Ratio faussé par une pause non détectée</td>
+    <td>Bannière → « Inclure quand même » si besoin inverse, ou effacer historique</td>
     </tr>
     <tr>
     <td>Trop de changements d&#x27;écran</td>

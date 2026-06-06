@@ -23,7 +23,7 @@ Swipe horizontal **sur l'écran principal** (geste franc, ~130 px) ou onglets en
 
 | Vue | Usage |
 |-----|--------|
-| **Glance** | Lecture rapide : km, prochain ravito, eau/solide/service, actions course |
+| **Glance** | Lecture rapide : km, prochain ravito, eau/solide/service, refresh GPS |
 | **Carte** | Trace, position, tous les POI filtrés, checkpoints |
 | **Profil** | Dénivelé et pente sur 20 km, le reste, ou tout le parcours |
 
@@ -38,24 +38,20 @@ Le swipe est désactivé sur la carte, les listes et le profil (scroll / pan car
 - **Hors trace** : distance affichée en mètres ; reste sur la route pour le km course.
 - Badge 📍 en haut : état GPS (fix récent ou en attente).
 
-**Conseil** : refresh au départ, régulièrement en roulant (toutes les 15–30 min selon besoin), et **systématiquement** en quittant un CP ou ravito.
+**Conseil** : refresh au départ, puis régulièrement en roulant (toutes les 15–30 min). Après un long arrêt, un refresh suffit : l'app gère la pause automatiquement.
 
 ---
 
-## Actions course
+## Détection automatique des pauses
 
-| Bouton | Quand l'utiliser |
-|--------|------------------|
-| **Refresh GPS** | Position + calcul du rythme (consultation normale) |
-| **Pause / ravito** | Tu t'arrêtes (CP, magasin, sieste) — ancre une pause sans polluer le ratio |
-| **Je repars maintenant** | **Après** une pause : nouvelle ancre de départ pour les ETAs, **sans** recalculer le ratio sur le temps arrêté |
-| **Terminer course** | Fin officielle : fige l'historique, plus de refresh |
+Pas de bouton pause à appuyer. L'algorithme analyse chaque segment entre deux refresh :
 
-### Pause détectée automatiquement
+1. **Pause évidente** (temps réel >> temps prévu, typiquement > 15 min de « surplus ») → le segment est **exclu du ratio** automatiquement.
+2. **Près d'un CP ou POI** (300 m / 150 m) → exclusion automatique encore plus fiable (ravito, contrôle).
+3. **Bannière informative** : « Pause détectée — exclue du rythme ». Tu n'as rien à faire.
+4. **Inclure quand même** : si l'app s'est trompée (montée lente confondue avec pause), tu peux forcer l'inclusion du segment dans le ratio.
 
-Si un segment est **beaucoup plus lent** que prévu (café, photo…), une **bannière** propose d'exclure ce temps du ratio (« Inclure quand même » si tu veux le garder).
-
-Près des **checkpoints** (300 m), les pauses sont en général **exclues automatiquement** du calcul de rythme.
+Terrain technique lent (hors bitume / gravel) : impact rythme **atténué** — peu pertinent sur ce BRM 100 % bitume.
 
 ---
 
@@ -127,7 +123,7 @@ Heures limites et temps de contrôle : **fiche officielle BRM** (l'app affiche d
 - Pas de suivi live permanent (choix batterie).
 - POI issus d'OpenStreetMap / OnRouteMap : **vérifier sur place** (horaires, eau réellement dispo).
 - Une seule trace : parcours **non bouclé** (1022 km linéaires).
-- Après « Terminer course », les refresh GPS sont ignorés.
+- Détection de pause heuristique : micro-arrêts < ~15 min peuvent encore influencer le ratio ; refresh espacés après un ravito aident.
 
 ---
 
@@ -138,7 +134,8 @@ Heures limites et temps de contrôle : **fiche officielle BRM** (l'app affiche d
 | Pas de GPS | Autorisation navigateur, mode avion désactivé, refresh en extérieur |
 | Vieille version | Vider cache / réinstaller PWA ; le service worker se met à jour au chargement |
 | Carte vide offline | Pré-charger les tuiles avec du réseau avant |
-| ETA incohérent après pause | **Je repars maintenant**, puis refresh GPS 5–10 km plus loin |
+| ETA incohérent après pause | Attendre 5–10 km de roulage + refresh ; la pause est normalement déjà exclue |
+| Ratio faussé par une pause non détectée | Bannière → « Inclure quand même » si besoin inverse, ou effacer historique |
 | Trop de changements d'écran | Swipe uniquement sur la zone glance centrale, geste plus long |
 
 ---

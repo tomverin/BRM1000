@@ -203,15 +203,9 @@
     .checkpoint .checkpoint-note { font-size: 17px; color: #fff; font-weight: 900; margin-top: 4px; }
     .history-row { display: grid; grid-template-columns: 60px 1fr 1fr 60px; gap: 6px; font-size: 11px; padding: 4px 0; border-bottom: 1px solid var(--border); }
     .history-row .label { color: var(--muted); }
-    .stop-prompt { background: #7f1d1d; color: #fee2e2; padding: 10px; border-radius: 6px; margin-top: 8px; display: none; }
-    .stop-prompt.visible { display: block; }
-    .stop-prompt .q { font-weight: 600; margin-bottom: 6px; }
     .stop-banner { background: #422006; color: #fef3c7; padding: 10px 12px; border-radius: 8px; border: 1px solid #92400e; margin-top: 8px; display: none; font-size: 14px; font-weight: 700; }
     .stop-banner.visible { display: block; }
     .stop-banner .actions { margin-top: 8px; display: flex; gap: 8px; flex-wrap: wrap; }
-    .glance-state-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 4px; }
-    .glance-state-actions button { min-height: 52px; font-size: 15px; font-weight: 900; }
-    .glance-state-actions button.primary-wide { grid-column: 1 / -1; min-height: 58px; font-size: 17px; }
     .eta-confidence { font-size: 12px; font-weight: 800; color: var(--muted); text-transform: uppercase; margin-left: 6px; }
     .eta-confidence.high { color: var(--green); }
     .eta-confidence.medium { color: var(--accent); }
@@ -295,16 +289,11 @@
     </div>
 
     <div class="glance-card glance-actions-wrap" style="padding:10px">
-      <div class="glance-label">Actions course</div>
-      <div class="glance-state-actions">
-        <button class="primary primary-wide" id="btn-glance-refresh" type="button">📍 Refresh GPS</button>
-        <button id="btn-arrive-stop" type="button">Pause / ravito</button>
-        <button id="btn-finish-race" type="button">Terminer course</button>
-      </div>
-      <button id="btn-depart-stop" type="button" style="width:100%;margin-top:8px;min-height:48px">Je repars maintenant</button>
+      <div class="glance-label">GPS</div>
+      <button class="primary primary-wide" id="btn-glance-refresh" type="button" style="width:100%;min-height:58px;font-size:17px;font-weight:900">📍 Refresh GPS</button>
       <a href="aide.html" style="display:block;text-align:center;margin-top:10px;padding:10px;font-size:15px;font-weight:800;color:var(--accent);text-decoration:none;border:1px solid var(--border);border-radius:8px">📖 Documentation</a>
       <div id="stop-banner" class="stop-banner">
-        <span id="stop-banner-text">Pause probable exclue du rythme.</span>
+        <span id="stop-banner-text">Pause détectée — exclue du rythme.</span>
         <div class="actions">
           <button type="button" id="btn-stop-include">Inclure quand même</button>
         </div>
@@ -382,14 +371,6 @@
       <div>
         <div class="label small">Vitesse réelle / théorique</div>
         <div id="cur-speed" class="v">—</div>
-      </div>
-    </div>
-    <div id="stop-prompt" class="stop-prompt">
-      <div class="q">Pause incluse dans ce segment ?</div>
-      <div class="small">Le dernier segment a duré beaucoup plus que prévu (arrêt café/photo/sieste ?). Exclure du calcul du ratio ?</div>
-      <div class="actions" style="margin-top: 8px;">
-        <button class="primary" id="btn-stop-yes">Oui, exclure</button>
-        <button id="btn-stop-no">Non, garder</button>
       </div>
     </div>
   </div>
@@ -1363,7 +1344,6 @@ function updatePaceState({
       return String(name || "route").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
     }
     const STORAGE_KEY = `pace-test:${storageSafeRouteName(ROUTE_NAME)}:${Math.round(TOTAL_KM)}km:v2`;
-    const FINISH_KEY = `${STORAGE_KEY}:finished`;
     const POSITION_CACHE_KEY = `${STORAGE_KEY}:gps-session-cache`;
     const POSITION_CACHE_MAX_AGE_S = 30;
     function loadHistory() {
@@ -1374,9 +1354,7 @@ function updatePaceState({
       localStorage.setItem(STORAGE_KEY, JSON.stringify(h));
     }
     let history = loadHistory();
-    let raceFinished = localStorage.getItem(FINISH_KEY) === "1";
     let lastSegmentKey = null;
-    let atStop = false;
     let pendingNew = null;
     let pendingSegment = null;
     let poiMode = "next";
@@ -2356,14 +2334,13 @@ function updatePaceState({
     // ===== Actions (V2) =====
     function hideStopBanner() {
       document.getElementById("stop-banner").classList.remove("visible");
-      document.getElementById("stop-prompt").classList.remove("visible");
     }
 
     function showStopBanner(result, entry) {
       const mins = result.segmentInfo ? Math.round((result.segmentInfo.realized_h - result.segmentInfo.predicted_h) * 60) : 0;
       const txt = result.segmentClassification === "technical_slow"
         ? "Terrain technique lent — impact rythme limit\u00E9."
-        : "Pause probable exclue du rythme" + (mins > 0 ? " (~" + mins + " min)" : "") + ".";
+        : "Pause d\u00E9tect\u00E9e — exclue du rythme" + (mins > 0 ? " (~" + mins + " min)" : "") + ".";
       setText("stop-banner-text", txt);
       document.getElementById("stop-banner").classList.add("visible");
       pendingNew = entry;
@@ -2388,10 +2365,6 @@ function updatePaceState({
     async function recordConsultation(opts) {
       const forceGps = !!(opts && opts.forceGps);
       const silent = !!(opts && opts.silent);
-      if (raceFinished) {
-        if (!silent) showToast("Course termin\u00E9e — GPS non enregistr\u00E9", "warn");
-        return;
-      }
       try {
         const fix = await requestPosition({force: forceGps});
         const previous = history[history.length - 1];
@@ -2434,82 +2407,12 @@ function updatePaceState({
         if (r.autoExcludedPause || r.stopSuspected) showStopBanner(r, newEntry);
         else hideStopBanner();
 
-        atStop = false;
         history.push(newEntry);
         saveHistory(history);
         render({recenter: true});
       } catch (e) {
         const msg = e.message || e;
         if (!silent) showToast("Erreur GPS : " + msg, "error", String(msg).includes("HTTP") ? 7000 : 4000);
-      }
-    }
-
-    async function recordAnchorEvent(eventType, label) {
-      if (raceFinished) return;
-      try {
-        const fix = await requestPosition({force: true});
-        const proj = projectOnPolyline(fix.lat, fix.lon, POLY_KM);
-        const entry = {
-          id: nextEntryId(),
-          ts: fix.ts,
-          lat: fix.lat,
-          lon: fix.lon,
-          km: proj.km_on_route,
-          off_track_m: proj.off_track_m,
-          event_type: eventType,
-          anchor_only: eventType === "depart_stop" || eventType === "manual_anchor",
-          excluded_segment: eventType !== "gps_fix",
-          segment_classification: eventType === "arrive_stop" ? "pause" : "anchor",
-          r_global_before: rGlobal,
-          r_global_after: rGlobal,
-          eta_confidence: "low",
-        };
-        if (eventType === "arrive_stop") atStop = true;
-        if (eventType === "depart_stop" || eventType === "manual_anchor") {
-          atStop = false;
-          hideStopBanner();
-        }
-        history.push(entry);
-        saveHistory(history);
-        showToast(label, "info");
-        render({recenter: true});
-      } catch (e) {
-        showToast("Erreur GPS : " + (e.message || e), "error");
-      }
-    }
-
-    async function recordFinishRace() {
-      if (!confirm("Terminer la course et figer l\u2019historique ?")) return;
-      try {
-        const fix = await requestPosition({force: true});
-        const proj = projectOnPolyline(fix.lat, fix.lon, POLY_KM);
-        history.push({
-          id: nextEntryId(),
-          ts: fix.ts,
-          lat: fix.lat,
-          lon: fix.lon,
-          km: proj.km_on_route,
-          off_track_m: proj.off_track_m,
-          event_type: "finish",
-          anchor_only: true,
-          excluded_segment: true,
-          segment_classification: "finish",
-          r_global_before: rGlobal,
-          r_global_after: rGlobal,
-          eta_confidence: "fin",
-        });
-        raceFinished = true;
-        localStorage.setItem(FINISH_KEY, "1");
-        saveHistory(history);
-        hideStopBanner();
-        showToast("Course termin\u00E9e \u2713", "info");
-        render({recenter: true});
-      } catch (e) {
-        raceFinished = true;
-        localStorage.setItem(FINISH_KEY, "1");
-        saveHistory(history);
-        showToast("Course termin\u00E9e (sans GPS final)", "warn");
-        render();
       }
     }
 
@@ -2567,9 +2470,6 @@ function updatePaceState({
       history = [];
       rGlobal = null;
       lastSegmentKey = null;
-      atStop = false;
-      raceFinished = false;
-      localStorage.removeItem(FINISH_KEY);
       pendingNew = null;
       pendingSegment = null;
       saveHistory(history);
@@ -2583,9 +2483,6 @@ function updatePaceState({
       history = [];
       rGlobal = null;
       lastSegmentKey = null;
-      atStop = false;
-      raceFinished = false;
-      localStorage.removeItem(FINISH_KEY);
       pendingNew = null;
       pendingSegment = null;
       saveHistory(history);
@@ -2647,12 +2544,7 @@ function updatePaceState({
       if (el) el.addEventListener("click", handler);
     }
     onClick("btn-refresh", () => recordConsultation({forceGps: true}));
-    onClick("btn-stop-yes", () => resolveStopPrompt(false));
-    onClick("btn-stop-no", () => resolveStopPrompt(true));
     onClick("btn-stop-include", () => resolveStopPrompt(true));
-    onClick("btn-depart-stop", () => recordAnchorEvent("depart_stop", "Reparti — ancrage r\u00E9initialis\u00E9"));
-    onClick("btn-arrive-stop", () => recordAnchorEvent("arrive_stop", "Pause enregistr\u00E9e"));
-    onClick("btn-finish-race", recordFinishRace);
     onClick("btn-export", exportHistory);
     onClick("btn-new-session", startNewSession);
     onClick("btn-clear", clearHistory);
