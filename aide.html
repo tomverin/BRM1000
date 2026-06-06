@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0f1419">
+  <title>BRM 1000 CCK 2026 — Aide</title>
+  <style>
+    :root {{
+      --bg: #0f1419; --bg2: #1a2332; --fg: #e8eaed; --muted: #9aa0a6;
+      --accent: #fbbf24; --border: #2d3748; --link: #60a5fa;
+    }}
+    * {{ box-sizing: border-box; }}
+    body {{
+      margin: 0; padding: 0;
+      font-family: system-ui, -apple-system, sans-serif;
+      background: var(--bg); color: var(--fg);
+      line-height: 1.55; font-size: 15px;
+    }}
+    header {{
+      position: sticky; top: 0; z-index: 10;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 16px; background: rgba(15,20,25,0.95);
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(8px);
+    }}
+    header a {{
+      color: var(--accent); text-decoration: none; font-weight: 800; font-size: 15px;
+    }}
+    header .meta {{ color: var(--muted); font-size: 12px; }}
+    main {{
+      max-width: 720px; margin: 0 auto; padding: 20px 16px 48px;
+    }}
+    h1 {{ font-size: 1.5rem; margin: 0 0 8px; color: var(--accent); }}
+    h2 {{
+      font-size: 1.15rem; margin: 28px 0 10px; padding-bottom: 6px;
+      border-bottom: 1px solid var(--border); color: #f3f4f6;
+    }}
+    h3 {{ font-size: 1rem; margin: 18px 0 8px; color: #d1d5db; }}
+    p {{ margin: 0 0 12px; }}
+    ul, ol {{ margin: 0 0 14px; padding-left: 1.25rem; }}
+    li {{ margin-bottom: 6px; }}
+    a {{ color: var(--link); }}
+    strong {{ color: #f9fafb; }}
+    code {{
+      background: var(--bg2); padding: 2px 6px; border-radius: 4px;
+      font-size: 0.9em; border: 1px solid var(--border);
+    }}
+    table {{
+      width: 100%; border-collapse: collapse; margin: 12px 0 16px;
+      font-size: 14px;
+    }}
+    th, td {{
+      border: 1px solid var(--border); padding: 8px 10px; text-align: left;
+    }}
+    th {{ background: var(--bg2); color: var(--accent); }}
+    tr:nth-child(even) td {{ background: rgba(26,35,50,0.5); }}
+    hr {{
+      border: none; border-top: 1px solid var(--border); margin: 24px 0;
+    }}
+    .subtitle {{ color: var(--muted); margin-bottom: 20px; font-size: 14px; }}
+  </style>
+</head>
+<body>
+  <header>
+    <a href="index.html">← Retour course</a>
+    <span class="meta">BRM 1000 CCK BFC 2026</span>
+  </header>
+  <main>
+<h1>BRM 1000 CCK 2026 — Guide d&#x27;utilisation</h1>
+    <p>Companion <strong>jour J</strong> pour le parcours officiel (~1022 km, 100 % bitume).</p>
+    <p>Site : <strong>https://tomverin.github.io/BRM1000/</strong></p>
+    <p>Cette application fonctionne <strong>hors ligne</strong> une fois chargée (PWA). Elle ne suit pas le GPS en continu : tu rafraîchis ta position quand tu en as besoin, pour préserver la batterie.</p>
+    <hr>
+    <h2>Avant le départ</h2>
+    <ol>
+    <li><strong>Ouvre le site</strong> sur ton téléphone (Chrome / Safari).</li>
+    <li><strong>Ajoute à l&#x27;écran d&#x27;accueil</strong> (installer la PWA) pour un accès rapide et un meilleur mode plein écran.</li>
+    <li><strong>Pré-charge les tuiles carte</strong> (panneau Outils → « Pré-charger tuiles ») si tu as du réseau la veille ou au départ — utile en zone mal couverte.</li>
+    <li>Autorise la <strong>géolocalisation</strong> quand le navigateur le demande.</li>
+    <li>Vérifie l&#x27;heure de départ affichée dans les checkpoints (utilisée pour les ETA horaires).</li>
+    </ol>
+    <hr>
+    <h2>Les trois vues</h2>
+    <p>Swipe horizontal <strong>sur l&#x27;écran principal</strong> (geste franc, ~130 px) ou onglets en haut :</p>
+    <table><thead><tr>
+    <th>Vue</th>
+    <th>Usage</th>
+    </tr></thead><tbody>
+    <tr>
+    <td><strong>Glance</strong></td>
+    <td>Lecture rapide : km, prochain ravito, eau/solide/service, actions course</td>
+    </tr>
+    <tr>
+    <td><strong>Carte</strong></td>
+    <td>Trace, position, tous les POI filtrés, checkpoints</td>
+    </tr>
+    <tr>
+    <td><strong>Profil</strong></td>
+    <td>Dénivelé et pente sur 20 km, le reste, ou tout le parcours</td>
+    </tr>
+    </tbody></table>
+    <p>Le swipe est désactivé sur la carte, les listes et le profil (scroll / pan carte sans changer de vue).</p>
+    <hr>
+    <h2>GPS et position</h2>
+    <ul>
+    <li><strong>Refresh GPS</strong> (bouton principal en glance, ou panneau Position en vue carte) : enregistre un point, projette sur la trace, met à jour km, ratio et ETAs.</li>
+    <li>Pas de suivi continu : chaque refresh = une <strong>consultation</strong> dans l&#x27;historique.</li>
+    <li><strong>Hors trace</strong> : distance affichée en mètres ; reste sur la route pour le km course.</li>
+    <li>Badge 📍 en haut : état GPS (fix récent ou en attente).</li>
+    </ul>
+    <p><strong>Conseil</strong> : refresh au départ, régulièrement en roulant (toutes les 15–30 min selon besoin), et <strong>systématiquement</strong> en quittant un CP ou ravito.</p>
+    <hr>
+    <h2>Actions course</h2>
+    <table><thead><tr>
+    <th>Bouton</th>
+    <th>Quand l&#x27;utiliser</th>
+    </tr></thead><tbody>
+    <tr>
+    <td><strong>Refresh GPS</strong></td>
+    <td>Position + calcul du rythme (consultation normale)</td>
+    </tr>
+    <tr>
+    <td><strong>Pause / ravito</strong></td>
+    <td>Tu t&#x27;arrêtes (CP, magasin, sieste) — ancre une pause sans polluer le ratio</td>
+    </tr>
+    <tr>
+    <td><strong>Je repars maintenant</strong></td>
+    <td><strong>Après</strong> une pause : nouvelle ancre de départ pour les ETAs, <strong>sans</strong> recalculer le ratio sur le temps arrêté</td>
+    </tr>
+    <tr>
+    <td><strong>Terminer course</strong></td>
+    <td>Fin officielle : fige l&#x27;historique, plus de refresh</td>
+    </tr>
+    </tbody></table>
+    <h3>Pause détectée automatiquement</h3>
+    <p>Si un segment est <strong>beaucoup plus lent</strong> que prévu (café, photo…), une <strong>bannière</strong> propose d&#x27;exclure ce temps du ratio (« Inclure quand même » si tu veux le garder).</p>
+    <p>Près des <strong>checkpoints</strong> (300 m), les pauses sont en général <strong>exclues automatiquement</strong> du calcul de rythme.</p>
+    <hr>
+    <h2>Rythme adaptatif et ETA</h2>
+    <ul>
+    <li><strong>Ratio adaptatif</strong> : compare ta vitesse réelle au modèle terrain (bitume ~24 km/h sur ce BRM).</li>
+    <li><strong>&gt; 1</strong> = plus rapide que prévu, <strong>&lt; 1</strong> = plus lent.</li>
+    <li>Les ETAs des POI et CP utilisent ce ratio quand la <strong>confiance</strong> est suffisante :</li>
+    </ul>
+    <p>- <strong>Haute</strong> : segment récent ≥ 10 km</p>
+    <p>- <strong>Moyenne</strong> : segment ≥ 5 km</p>
+    <p>- <strong>Faible</strong> : peu de données récentes (après pause, peu de refresh)</p>
+    <p>Le modèle ignore les segments trop courts (&lt; 5 km ou &lt; 10 min) pour éviter le bruit GPS.</p>
+    <hr>
+    <h2>POIs (points d&#x27;intérêt)</h2>
+    <p><strong>~385 POI</strong> le long du parcours (OnRouteMap + BPF/ravitos orga) :</p>
+    <ul>
+    <li><strong>Eau</strong> : fontaines, cimetières (eau potable)</li>
+    <li><strong>Solide</strong> : boulangeries, cafés, supermarchés, restauration rapide, BPF orga</li>
+    <li><strong>Services</strong> : toilettes, stations-service</li>
+    </ul>
+    <p><strong>Filtres</strong> : active/désactive les catégories (panneau POI en vue carte).</p>
+    <ul>
+    <li><strong>Carte</strong> : affiche <strong>tous</strong> les POI des catégories actives sur le parcours.</li>
+    <li><strong>Liste « Prochains »</strong> : fenêtre <strong>50 km</strong> devant ta position.</li>
+    <li><strong>Liste « Tous »</strong> : ordre kilométrique sur tout le parcours.</li>
+    </ul>
+    <p>Les <strong>BPF et ravitos organisation</strong> du parcours officiel sont marqués dans les données (<code>orga</code>).</p>
+    <hr>
+    <h2>Checkpoints</h2>
+    <p>Contrôles et arrivée extraits du GPX officiel :</p>
+    <table><thead><tr>
+    <th>CP</th>
+    <th>Lieu (indicatif)</th>
+    <th>km</th>
+    </tr></thead><tbody>
+    <tr>
+    <td>Départ</td>
+    <td>—</td>
+    <td>0</td>
+    </tr>
+    <tr>
+    <td>CP1</td>
+    <td>Besançon</td>
+    <td>~154</td>
+    </tr>
+    <tr>
+    <td>CP2</td>
+    <td>Château-Chalon</td>
+    <td>~289</td>
+    </tr>
+    <tr>
+    <td>CP3</td>
+    <td>Brançion</td>
+    <td>~419</td>
+    </tr>
+    <tr>
+    <td>CP4</td>
+    <td>Autun</td>
+    <td>~508</td>
+    </tr>
+    <tr>
+    <td>CP5</td>
+    <td>Veselay</td>
+    <td>~616</td>
+    </tr>
+    <tr>
+    <td>CP6</td>
+    <td>Alésia</td>
+    <td>~699</td>
+    </tr>
+    <tr>
+    <td>CP7</td>
+    <td>Froideconche</td>
+    <td>~897</td>
+    </tr>
+    <tr>
+    <td>CP8</td>
+    <td>Grand Ballon</td>
+    <td>~984</td>
+    </tr>
+    <tr>
+    <td>Arrivée</td>
+    <td>—</td>
+    <td>~1022</td>
+    </tr>
+    </tbody></table>
+    <p>Heures limites et temps de contrôle : <strong>fiche officielle BRM</strong> (l&#x27;app affiche des ETA indicatives, pas l&#x27;horaire réglementaire).</p>
+    <hr>
+    <h2>Outils</h2>
+    <ul>
+    <li><strong>Raster / Vector</strong> : bascule moteur carte (Leaflet raster vs MapLibre vectoriel).</li>
+    <li><strong>Pré-charger tuiles</strong> : cache offline pour la zone du parcours.</li>
+    <li><strong>Exporter historique</strong> : JSON des consultations (débrief post-course).</li>
+    <li><strong>Nouvelle session</strong> : efface l&#x27;historique local (confirmation).</li>
+    <li><strong>Effacer historique</strong> : idem sans relancer un GPS.</li>
+    </ul>
+    <hr>
+    <h2>Limites connues</h2>
+    <ul>
+    <li>Pas de navigation turn-by-turn.</li>
+    <li>Pas de suivi live permanent (choix batterie).</li>
+    <li>POI issus d&#x27;OpenStreetMap / OnRouteMap : <strong>vérifier sur place</strong> (horaires, eau réellement dispo).</li>
+    <li>Une seule trace : parcours <strong>non bouclé</strong> (1022 km linéaires).</li>
+    <li>Après « Terminer course », les refresh GPS sont ignorés.</li>
+    </ul>
+    <hr>
+    <h2>Dépannage</h2>
+    <table><thead><tr>
+    <th>Problème</th>
+    <th>Piste</th>
+    </tr></thead><tbody>
+    <tr>
+    <td>Pas de GPS</td>
+    <td>Autorisation navigateur, mode avion désactivé, refresh en extérieur</td>
+    </tr>
+    <tr>
+    <td>Vieille version</td>
+    <td>Vider cache / réinstaller PWA ; le service worker se met à jour au chargement</td>
+    </tr>
+    <tr>
+    <td>Carte vide offline</td>
+    <td>Pré-charger les tuiles avec du réseau avant</td>
+    </tr>
+    <tr>
+    <td>ETA incohérent après pause</td>
+    <td><strong>Je repars maintenant</strong>, puis refresh GPS 5–10 km plus loin</td>
+    </tr>
+    <tr>
+    <td>Trop de changements d&#x27;écran</td>
+    <td>Swipe uniquement sur la zone glance centrale, geste plus long</td>
+    </tr>
+    </tbody></table>
+    <hr>
+    <p>*Généré depuis training-journal — modèle pacing V2 (Corsica 555 / BRM 1000).*</p>
+  </main>
+</body>
+</html>
