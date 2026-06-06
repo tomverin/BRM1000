@@ -1469,7 +1469,10 @@ function updatePaceState({
       let startX = 0;
       let startY = 0;
       let startTime = 0;
-      const interactiveSelector = "button,a,input,select,textarea,summary,[role='button']";
+      let swipeCancelled = false;
+      const SWIPE_MIN_PX = 130;
+      const SWIPE_MAX_MS = 550;
+      const interactiveSelector = "button,a,input,select,textarea,summary,[role='button'],.list,.poi-list,#poi-list,#checkpoints,.elevation-chart-wrap,#map,.map-wrap";
       document.addEventListener("touchstart", (event) => {
         if (event.touches.length !== 1) return;
         if (event.target.closest(interactiveSelector)) return;
@@ -1477,6 +1480,14 @@ function updatePaceState({
         startX = touch.clientX;
         startY = touch.clientY;
         startTime = Date.now();
+        swipeCancelled = false;
+      }, {passive: true, capture: true});
+      document.addEventListener("touchmove", (event) => {
+        if (!startTime || event.touches.length !== 1) return;
+        const touch = event.touches[0];
+        const dx = Math.abs(touch.clientX - startX);
+        const dy = Math.abs(touch.clientY - startY);
+        if (dy > 35 && dy > dx * 1.1) swipeCancelled = true;
       }, {passive: true, capture: true});
       document.addEventListener("touchend", (event) => {
         if (!startTime || event.changedTouches.length !== 1) return;
@@ -1486,7 +1497,8 @@ function updatePaceState({
         const dy = touch.clientY - startY;
         const elapsedMs = Date.now() - startTime;
         startTime = 0;
-        if (elapsedMs > 900 || Math.abs(dx) < 70 || Math.abs(dx) < Math.abs(dy) * 1.35) return;
+        if (swipeCancelled) { swipeCancelled = false; return; }
+        if (elapsedMs > SWIPE_MAX_MS || Math.abs(dx) < SWIPE_MIN_PX || Math.abs(dx) < Math.abs(dy) * 2.2) return;
         shiftViewMode(dx < 0 ? 1 : -1);
       }, {passive: true, capture: true});
     }
@@ -2285,18 +2297,19 @@ function updatePaceState({
         o.dist_ahead = distAhead(curKm, p.route_km);
         return o;
       }).filter(p => poiPassesFilter(p));
-      let visible;
+      const mapVisible = scored;
+      let listVisible;
       if (poiMode === "all") {
-        visible = scored.slice().sort((a, b) => a.route_km - b.route_km);
+        listVisible = scored.slice().sort((a, b) => a.route_km - b.route_km);
       } else {
-        visible = scored
-          .filter(p => p.dist_ahead >= -0.5 && p.dist_ahead <= 30)
+        listVisible = scored
+          .filter(p => p.dist_ahead >= -0.5 && p.dist_ahead <= 50)
           .sort((a, b) => a.dist_ahead - b.dist_ahead);
       }
-      applyPoiMarkerVisibility(new Set(visible.map(p => p.poi_index)));
-      document.getElementById("poi-count").textContent = visible.length;
+      applyPoiMarkerVisibility(new Set(mapVisible.map(p => p.poi_index)));
+      document.getElementById("poi-count").textContent = listVisible.length;
       const now = Date.now();
-      const html = visible.map(p => {
+      const html = listVisible.map(p => {
         let etaH;
         if (IS_LOOP && p.route_km < curKm) {
           const h1 = etaToTarget(curKm, TOTAL_KM, POLY_KM, CUM_PREDICTED_H, rGlobal);
