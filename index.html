@@ -2224,6 +2224,23 @@ function crewInitials(name) {
       return spans;
     }
 
+    function elevationCrewMarkersHtml(x0, x1, sx, sy, pad, terrainTop, terrainHeight) {
+      if (!crewSyncEnabled() || !crewRiders.length) return "";
+      return crewRiders.map((rider, index) => {
+        const riderKm = projectOnPolyline(rider.lat, rider.lon, POLY_KM).km_on_route;
+        if (riderKm < x0 - 0.001 || riderKm > x1 + 0.001) return "";
+        const color = crewMarkerColor(index);
+        const x = sx(riderKm);
+        const y = sy(elevationAtKm(riderKm));
+        const label = crewInitials(rider.name);
+        return '<line x1="' + x.toFixed(1) + '" y1="' + pad.top + '" x2="' + x.toFixed(1) + '" y2="' + (terrainTop + terrainHeight) +
+          '" stroke="' + color + '" stroke-width="1.5" stroke-dasharray="4 4" opacity="0.8"/>' +
+          '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="6" fill="' + color + '" stroke="#0f1419" stroke-width="2"/>' +
+          '<text x="' + x.toFixed(1) + '" y="' + Math.max(14, y - 14).toFixed(1) + '" fill="' + color +
+          '" font-size="13" font-weight="900" text-anchor="middle">' + escapeHtml(label) + '</text>';
+      }).join("");
+    }
+
     function renderElevation() {
       const svg = document.getElementById("elevation-chart");
       const statsEl = document.getElementById("elevation-stats");
@@ -2316,6 +2333,7 @@ function crewInitials(name) {
       const marker = currentAxisKm >= x0 - 0.001 && currentAxisKm <= x1 + 0.001
         ? `<line x1="${currentX.toFixed(1)}" y1="${pad.top}" x2="${currentX.toFixed(1)}" y2="${terrainTop + terrainHeight}" stroke="#60a5fa" stroke-width="2" stroke-dasharray="7 7"/><circle cx="${currentX.toFixed(1)}" cy="${currentY.toFixed(1)}" r="7" fill="#60a5fa" stroke="#e0f2fe" stroke-width="3"/><text x="${markerTextX.toFixed(1)}" y="${Math.max(26, currentY - 12).toFixed(1)}" fill="#e0f2fe" font-size="18" font-weight="800" text-anchor="${markerAnchor}">km ${curKm.toFixed(1)}</text>`
         : "";
+      const crewMarkers = elevationCrewMarkersHtml(x0, x1, sx, sy, pad, terrainTop, terrainHeight);
       const rangeLabel = range.distanceKm < 10 ? range.distanceKm.toFixed(1) : range.distanceKm.toFixed(0);
       const {gain, loss} = elevationGainLoss(samples);
       const binStep = gradeBinStepKm(range.distanceKm);
@@ -2325,7 +2343,7 @@ function crewInitials(name) {
         <pattern id="terrain-unknown-pattern" width="10" height="10" patternUnits="userSpaceOnUse"><rect width="10" height="10" fill="#64748b"/><circle cx="2" cy="5" r="1.3" fill="#111827"/><circle cx="7" cy="5" r="1.3" fill="#111827"/></pattern>
       </defs>`;
       svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
-      svg.innerHTML = `${defs}<rect width="${width}" height="${height}" fill="#071018"/>${xGrid}${yGrid}<rect x="${pad.left}" y="${pad.top}" width="${plotW}" height="${plotH}" fill="url(#elevation-shade)" opacity="0.7"/>${profileSegments}<polyline points="${linePoints}" fill="none" stroke="#f8fafc" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" opacity="0.92"/>${marker}<line x1="${pad.left}" y1="${gradeZero}" x2="${width - pad.right}" y2="${gradeZero}" stroke="#e5e7eb" stroke-width="1" opacity="0.55"/><text x="12" y="${gradeTop + 14}" fill="#d1d5db" font-size="15" font-weight="900">montée</text><text x="12" y="${gradeBottom - 5}" fill="#d1d5db" font-size="15" font-weight="900">descente</text><text x="${pad.left}" y="${gradeTop - 10}" fill="#f8fafc" font-size="16" font-weight="900">Pente moyenne par ${binStep} km</text>${gradeBars}${gradeLabels}<text x="12" y="${terrainTop + 15}" fill="#d1d5db" font-size="15" font-weight="900">terrain</text>${terrainRects}<rect x="${pad.left}" y="${terrainTop}" width="${plotW}" height="${terrainHeight}" fill="none" stroke="#e5e7eb" stroke-width="1" opacity="0.55"/><text x="${pad.left}" y="24" fill="#f8fafc" font-size="20" font-weight="900">${range.label}</text><text x="${width - pad.right}" y="24" fill="#cbd5e1" font-size="18" text-anchor="end">${rangeLabel} km</text>`;
+      svg.innerHTML = `${defs}<rect width="${width}" height="${height}" fill="#071018"/>${xGrid}${yGrid}<rect x="${pad.left}" y="${pad.top}" width="${plotW}" height="${plotH}" fill="url(#elevation-shade)" opacity="0.7"/>${profileSegments}<polyline points="${linePoints}" fill="none" stroke="#f8fafc" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" opacity="0.92"/>${crewMarkers}${marker}<line x1="${pad.left}" y1="${gradeZero}" x2="${width - pad.right}" y2="${gradeZero}" stroke="#e5e7eb" stroke-width="1" opacity="0.55"/><text x="12" y="${gradeTop + 14}" fill="#d1d5db" font-size="15" font-weight="900">montée</text><text x="12" y="${gradeBottom - 5}" fill="#d1d5db" font-size="15" font-weight="900">descente</text><text x="${pad.left}" y="${gradeTop - 10}" fill="#f8fafc" font-size="16" font-weight="900">Pente moyenne par ${binStep} km</text>${gradeBars}${gradeLabels}<text x="12" y="${terrainTop + 15}" fill="#d1d5db" font-size="15" font-weight="900">terrain</text>${terrainRects}<rect x="${pad.left}" y="${terrainTop}" width="${plotW}" height="${terrainHeight}" fill="none" stroke="#e5e7eb" stroke-width="1" opacity="0.55"/><text x="${pad.left}" y="24" fill="#f8fafc" font-size="20" font-weight="900">${range.label}</text><text x="${width - pad.right}" y="24" fill="#cbd5e1" font-size="18" text-anchor="end">${rangeLabel} km</text>`;
       statsEl.innerHTML = `<div class="elevation-stat"><div class="label">Distance</div><div class="value">${rangeLabel} km</div></div><div class="elevation-stat"><div class="label">D+</div><div class="value">${formatElevationMeters(gain)}</div></div><div class="elevation-stat"><div class="label">D-</div><div class="value">${formatElevationMeters(loss)}</div></div><div class="elevation-stat"><div class="label">Altitude</div><div class="value">${formatElevationMeters(currentEle)}</div></div>`;
     }
 
@@ -2650,6 +2668,7 @@ function crewInitials(name) {
       if (glancePanel) glancePanel.classList.add("visible");
       if (mapPanel) mapPanel.classList.add("visible");
       renderCrewMarkers();
+      renderElevation();
     }
 
     async function publishMyPosition(fix) {
