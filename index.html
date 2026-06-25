@@ -2664,14 +2664,21 @@ function crewInitials(name) {
           name: identity.name,
           lat: fix.lat,
           lon: fix.lon,
-          ts: fix.ts,
+          ts: Math.round(Date.now() / 1000),
         });
       } catch (e) {
+        const msg = String(e.message || e);
         if (!publishMyPosition._warned) {
           publishMyPosition._warned = true;
-          showToast("Partage équipe indisponible", "warn", 3000);
+          showToast("Partage \u00E9quipe : " + msg, "warn", 6000);
         }
       }
+    }
+
+    async function shareCrewAfterFix(fix) {
+      if (!fix) return;
+      await publishMyPosition(fix);
+      await refreshCrewPositions();
     }
 
     async function refreshCrewPositions() {
@@ -2895,6 +2902,7 @@ function crewInitials(name) {
         const previous = history[history.length - 1];
         if (previous && Math.abs(previous.ts - fix.ts) <= 1 && haversineM(previous.lat, previous.lon, fix.lat, fix.lon) < 2) {
           render({recenter: true});
+          await shareCrewAfterFix(fix);
           return;
         }
         const proj = projectOnPolyline(fix.lat, fix.lon, POLY_KM);
@@ -2925,6 +2933,7 @@ function crewInitials(name) {
         if (r.duplicate) {
           if (!silent) showToast("Consultation ignor\u00E9e (doublon)", "info", 2500);
           render({recenter: true});
+          await shareCrewAfterFix(fix);
           return;
         }
 
@@ -2935,8 +2944,7 @@ function crewInitials(name) {
         history.push(newEntry);
         saveHistory(history);
         render({recenter: true});
-        await publishMyPosition(fix);
-        await refreshCrewPositions();
+        await shareCrewAfterFix(fix);
       } catch (e) {
         const msg = e.message || e;
         if (!silent) showToast("Erreur GPS : " + msg, "error", String(msg).includes("HTTP") ? 7000 : 4000);
