@@ -231,6 +231,26 @@
     .maplibregl-popup-anchor-right .maplibregl-popup-tip { border-left-color: var(--bg2); }
     .maplibregl-ctrl-attrib { font-size: 10px !important; background: rgba(15,20,25,0.7) !important; }
     .maplibregl-ctrl-attrib a { color: var(--muted) !important; }
+    .crew-panel { display: none; }
+    .crew-panel.visible { display: block; }
+    .crew-panel .crew-title { color: var(--accent); font-size: 12px; font-weight: 900; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 8px; }
+    .crew-row { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 8px; align-items: baseline; padding: 6px 0; border-bottom: 1px solid var(--border); font-size: 18px; font-weight: 800; }
+    .crew-row:last-child { border-bottom: none; }
+    .crew-row .crew-name { color: #fff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .crew-row .crew-km { color: var(--accent); white-space: nowrap; }
+    .crew-row .crew-age { color: #fff; font-size: 15px; white-space: nowrap; text-align: right; }
+    .crew-row.stale .crew-age { color: var(--muted); }
+    .crew-empty { color: var(--muted); font-size: 15px; font-weight: 700; }
+    .crew-map-overlay { position: absolute; z-index: 6; top: 10px; left: 10px; max-width: min(92vw, 280px); background: rgba(15,20,25,0.9); border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; display: none; }
+    .crew-map-overlay.visible { display: block; }
+    .crew-modal-backdrop { position: fixed; inset: 0; z-index: 20000; background: rgba(0,0,0,0.72); display: none; align-items: center; justify-content: center; padding: 20px; }
+    .crew-modal-backdrop.visible { display: flex; }
+    .crew-modal { width: min(100%, 360px); background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 18px; }
+    .crew-modal h3 { margin: 0 0 8px; font-size: 20px; color: #fff; }
+    .crew-modal p { margin: 0 0 12px; color: var(--muted); font-size: 14px; line-height: 1.35; }
+    .crew-modal input { width: 100%; box-sizing: border-box; padding: 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: #fff; font-size: 18px; font-weight: 700; }
+    .crew-modal .actions { margin-top: 12px; display: flex; gap: 8px; }
+    .crew-modal .actions button { flex: 1; min-height: 48px; font-size: 16px; font-weight: 800; }
   </style>
 </head>
 <body class="glance-mode">
@@ -282,6 +302,11 @@
       <div class="glance-card glance-tile"><div class="icon">💧</div><div><div class="name">Eau</div><div id="glance-water-distance" class="dist">—</div></div></div>
       <div class="glance-card glance-tile"><div class="icon">🥖</div><div><div class="name">Solide</div><div id="glance-food-distance" class="dist">—</div></div></div>
       <div class="glance-card glance-tile"><div class="icon">🔧</div><div><div class="name">Service</div><div id="glance-service-distance" class="dist">—</div></div></div>
+    </div>
+
+    <div id="crew-panel-glance" class="glance-card crew-panel" style="padding:10px" aria-label="Équipe">
+      <div class="crew-title">Équipe</div>
+      <div id="crew-list-glance"></div>
     </div>
 
     <div class="glance-card glance-next">
@@ -343,6 +368,10 @@
 
   <div class="map-wrap">
     <div id="map"></div>
+    <div id="crew-panel-map" class="crew-map-overlay" aria-label="Équipe sur la carte">
+      <div class="crew-title">Équipe</div>
+      <div id="crew-list-map"></div>
+    </div>
     <div class="surface-legend" aria-label="Légende surface">
       <span><i class="surface-swatch"></i>Bitume</span>
       <span><i class="surface-swatch unpaved"></i>Chemin</span>
@@ -415,6 +444,17 @@
   </div>
 
   <div id="toast" class="toast"></div>
+
+  <div id="crew-modal-backdrop" class="crew-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="crew-modal-title">
+    <div class="crew-modal">
+      <h3 id="crew-modal-title">Ton prénom</h3>
+      <p>Partagé avec l'équipe sur la carte (pas de compte requis).</p>
+      <input id="crew-modal-input" type="text" maxlength="32" autocomplete="nickname" placeholder="Ex. Tom">
+      <div class="actions">
+        <button type="button" id="crew-modal-submit" class="primary">Valider</button>
+      </div>
+    </div>
+  </div>
 
   <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -1392,6 +1432,119 @@ function updatePaceState({
 }
 
 
+
+/* === crew_sync.js === */
+
+// Auth-free crew position sync via Firebase Realtime Database REST API.
+
+const CREW_MARKER_COLORS = ["#60a5fa", "#a78bfa", "#fbbf24"];
+
+function slugifyRiderName(name) {
+  const s = String(name || "")
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+  return s || "rider";
+}
+
+function crewDbPath(dbUrl, roomId) {
+  const base = String(dbUrl || "").replace(/\/+$/, "");
+  const room = encodeURIComponent(String(roomId || "").trim());
+  return `${base}/rooms/${room}`;
+}
+
+function publishCrewPosition({ dbUrl, roomId, riderSlug, name, lat, lon, ts }) {
+  const slug = encodeURIComponent(String(riderSlug || "").trim());
+  if (!slug) return Promise.reject(new Error("rider slug required"));
+  const url = `${crewDbPath(dbUrl, roomId)}/${slug}.json`;
+  const body = JSON.stringify({
+    name: String(name || riderSlug),
+    lat: Number(lat),
+    lon: Number(lon),
+    ts: Math.round(Number(ts)),
+  });
+  return fetch(url, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body,
+    cache: "no-store",
+  }).then((resp) => {
+    if (!resp.ok) throw new Error(`publish failed (${resp.status})`);
+    return resp.json().catch(() => null);
+  });
+}
+
+function fetchCrewPositions({ dbUrl, roomId }) {
+  const url = `${crewDbPath(dbUrl, roomId)}.json`;
+  return fetch(url, { cache: "no-store" }).then((resp) => {
+    if (!resp.ok) throw new Error(`fetch failed (${resp.status})`);
+    return resp.json();
+  });
+}
+
+function parseCrewRiders(raw, selfSlug, nowS, staleAfterS) {
+  const riders = [];
+  if (!raw || typeof raw !== "object") return riders;
+  const self = selfSlug ? String(selfSlug).trim().toLowerCase() : "";
+  const now = Math.round(Number(nowS));
+  const staleAfter = Math.max(60, Math.round(Number(staleAfterS) || 10800));
+
+  for (const [slug, entry] of Object.entries(raw)) {
+    if (!entry || typeof entry !== "object") continue;
+    const name = String(entry.name || slug).trim();
+    const lat = Number(entry.lat);
+    const lon = Number(entry.lon);
+    const ts = Math.round(Number(entry.ts));
+    if (!Number.isFinite(lat) || !Number.isFinite(lon) || !Number.isFinite(ts)) continue;
+    const ageS = Math.max(0, now - ts);
+    if (ageS > staleAfter) continue;
+    const riderSlug = String(slug).trim().toLowerCase();
+    if (self && riderSlug === self) continue;
+    riders.push({
+      slug: riderSlug,
+      name,
+      lat,
+      lon,
+      ts,
+      ageS,
+      stale: ageS > 1800,
+    });
+  }
+
+  riders.sort((a, b) => a.name.localeCompare(b.name, "fr"));
+  return riders;
+}
+
+function crewMarkerColor(index) {
+  const i = Math.max(0, Math.floor(Number(index) || 0));
+  return CREW_MARKER_COLORS[i % CREW_MARKER_COLORS.length];
+}
+
+function formatCrewAgeS(ageS) {
+  const s = Math.max(0, Math.round(Number(ageS) || 0));
+  if (s < 60) return "à l'instant";
+  const m = Math.floor(s / 60);
+  if (m < 60) return `il y a ${m} min`;
+  const h = Math.floor(m / 60);
+  const rm = m % 60;
+  if (rm === 0) return `il y a ${h} h`;
+  return `il y a ${h} h ${rm} min`;
+}
+
+function crewInitials(name) {
+  const parts = String(name || "")
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
+  if (!parts.length) return "?";
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
+
+
   </script>
 
   <script>
@@ -1443,6 +1596,7 @@ function updatePaceState({
     const TOTAL_KM = TRACK[TRACK.length - 1].km;
     const IS_LOOP = false;
     const START_TIME = "2026-07-11T08:00:00+02:00";
+    const CREW_SYNC = {"enabled":true,"dbUrl":"https://brm1000-crew-default-rtdb.europe-west1.firebasedatabase.app/","roomId":"brm1000-cck-2026-k7m2p9","staleAfterS":10800};
     const STYLE_URL = "https://tiles.openfreemap.org/styles/liberty";
 
     function distAhead(curKm, targetKm) {
@@ -1459,6 +1613,8 @@ function updatePaceState({
     }
     const STORAGE_KEY = `pace-test:${storageSafeRouteName(ROUTE_NAME)}:${Math.round(TOTAL_KM)}km:v2`;
     const POSITION_CACHE_KEY = `${STORAGE_KEY}:gps-session-cache`;
+    const CREW_RIDER_SLUG_KEY = `${STORAGE_KEY}:crew-rider-slug`;
+    const CREW_RIDER_NAME_KEY = `${STORAGE_KEY}:crew-rider-name`;
     const POSITION_CACHE_MAX_AGE_S = 30;
     function loadHistory() {
       try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"); }
@@ -1476,6 +1632,10 @@ function updatePaceState({
     let rGlobal = recomputeRGlobalFromHistory(history);
     let viewMode = localStorage.getItem("race-view-mode") || "glance";
     let elevationMode = localStorage.getItem(`${STORAGE_KEY}:elevation-mode`) || "full";
+    let crewRiders = [];
+    const crewMarkers = new Map();
+    let crewPollTimer = null;
+    let crewIdentity = null;
 
     function nextEntryId() {
       return history.length ? Math.max(...history.map((e, i) => e.id ?? i)) + 1 : 0;
@@ -1881,6 +2041,7 @@ function updatePaceState({
     function switchMapEngine() {
       const view = getMapView();
       const next = mapEngine === "leaflet" ? "maplibre" : "leaflet";
+      clearCrewMarkers();
       initMap(next, view);
       render();
     }
@@ -2296,6 +2457,255 @@ function updatePaceState({
       b.title = "GPS " + (fresh ? "r\u00E9cent" : "ancien") + " " + agoS + "s";
     }
 
+    // ===== Crew sync =====
+    function crewSyncEnabled() {
+      return !!(CREW_SYNC && CREW_SYNC.enabled && CREW_SYNC.dbUrl && CREW_SYNC.roomId);
+    }
+
+    function readCrewIdentityFromUrl() {
+      const params = new URLSearchParams(location.search);
+      const raw = params.get("rider") || params.get("name");
+      if (!raw) return null;
+      const name = String(raw).trim();
+      if (!name) return null;
+      return { slug: slugifyRiderName(name), name };
+    }
+
+    function loadCrewIdentity() {
+      if (crewIdentity) return crewIdentity;
+      const fromUrl = readCrewIdentityFromUrl();
+      if (fromUrl) {
+        try {
+          localStorage.setItem(CREW_RIDER_SLUG_KEY, fromUrl.slug);
+          localStorage.setItem(CREW_RIDER_NAME_KEY, fromUrl.name);
+        } catch (e) {}
+        crewIdentity = fromUrl;
+        return crewIdentity;
+      }
+      try {
+        const slug = localStorage.getItem(CREW_RIDER_SLUG_KEY);
+        const name = localStorage.getItem(CREW_RIDER_NAME_KEY);
+        if (slug && name) {
+          crewIdentity = { slug, name };
+          return crewIdentity;
+        }
+      } catch (e) {}
+      return null;
+    }
+
+    function saveCrewIdentity(name) {
+      const trimmed = String(name || "").trim();
+      if (!trimmed) return null;
+      const identity = { slug: slugifyRiderName(trimmed), name: trimmed };
+      try {
+        localStorage.setItem(CREW_RIDER_SLUG_KEY, identity.slug);
+        localStorage.setItem(CREW_RIDER_NAME_KEY, identity.name);
+      } catch (e) {}
+      crewIdentity = identity;
+      return identity;
+    }
+
+    function showCrewNameModal() {
+      return new Promise(resolve => {
+        const backdrop = document.getElementById("crew-modal-backdrop");
+        const input = document.getElementById("crew-modal-input");
+        const submit = document.getElementById("crew-modal-submit");
+        if (!backdrop || !input || !submit) {
+          resolve(null);
+          return;
+        }
+        backdrop.classList.add("visible");
+        input.value = "";
+        input.focus();
+        function finish(value) {
+          backdrop.classList.remove("visible");
+          submit.removeEventListener("click", onSubmit);
+          input.removeEventListener("keydown", onKey);
+          resolve(value);
+        }
+        function onSubmit() {
+          const name = input.value.trim();
+          if (!name) {
+            input.focus();
+            return;
+          }
+          finish(saveCrewIdentity(name));
+        }
+        function onKey(ev) {
+          if (ev.key === "Enter") onSubmit();
+        }
+        submit.addEventListener("click", onSubmit);
+        input.addEventListener("keydown", onKey);
+      });
+    }
+
+    async function ensureCrewIdentity() {
+      if (!crewSyncEnabled()) return null;
+      const existing = loadCrewIdentity();
+      if (existing) return existing;
+      return showCrewNameModal();
+    }
+
+    function crewMarkerHtml(color, label) {
+      return '<div style="width:26px;height:26px;border-radius:50%;background:' + color +
+        ';border:2px solid #0f1419;color:#0f1419;display:flex;align-items:center;justify-content:center;' +
+        'font-weight:900;font-size:10px;box-shadow:0 0 0 2px rgba(255,255,255,0.35),0 2px 6px rgba(0,0,0,0.7);">' +
+        escapeHtml(label) + '</div>';
+    }
+
+    function crewPopupHtml(rider) {
+      const proj = projectOnPolyline(rider.lat, rider.lon, POLY_KM);
+      return "<strong>" + escapeHtml(rider.name) + "</strong><br>km " + proj.km_on_route.toFixed(1) +
+        "<br>" + formatCrewAgeS(rider.ageS);
+    }
+
+    function clearCrewMarkers() {
+      for (const marker of crewMarkers.values()) {
+        if (mapEngine === "leaflet") marker.remove();
+        else marker.remove();
+      }
+      crewMarkers.clear();
+    }
+
+    function renderCrewMarkers() {
+      if (!map || !crewSyncEnabled()) return;
+      const activeSlugs = new Set(crewRiders.map(r => r.slug));
+      for (const [slug, marker] of crewMarkers.entries()) {
+        if (!activeSlugs.has(slug)) {
+          if (mapEngine === "leaflet") marker.remove();
+          else marker.remove();
+          crewMarkers.delete(slug);
+        }
+      }
+      crewRiders.forEach((rider, index) => {
+        const color = crewMarkerColor(index);
+        const label = crewInitials(rider.name);
+        const popupHtml = crewPopupHtml(rider);
+        let marker = crewMarkers.get(rider.slug);
+        if (mapEngine === "leaflet") {
+          if (!marker) {
+            const icon = L.divIcon({
+              className: "",
+              html: crewMarkerHtml(color, label),
+              iconSize: [26, 26],
+              iconAnchor: [13, 13],
+            });
+            marker = L.marker([rider.lat, rider.lon], { icon, zIndexOffset: 900 })
+              .bindPopup(popupHtml)
+              .addTo(map);
+            crewMarkers.set(rider.slug, marker);
+          } else {
+            marker.setLatLng([rider.lat, rider.lon]);
+            marker.setPopupContent(popupHtml);
+          }
+        } else {
+          if (!marker) {
+            const el = document.createElement("div");
+            el.innerHTML = crewMarkerHtml(color, label);
+            marker = new maplibregl.Marker({ element: el })
+              .setLngLat([rider.lon, rider.lat])
+              .setPopup(new maplibregl.Popup({ offset: 12, closeButton: true }).setHTML(popupHtml))
+              .addTo(map);
+            crewMarkers.set(rider.slug, marker);
+          } else {
+            marker.setLngLat([rider.lon, rider.lat]);
+            const popup = marker.getPopup();
+            if (popup) popup.setHTML(popupHtml);
+          }
+        }
+      });
+    }
+
+    function renderCrewListHtml() {
+      if (!crewRiders.length) {
+        return '<div class="crew-empty">Aucun autre coureur récent.</div>';
+      }
+      return crewRiders.map(rider => {
+        const proj = projectOnPolyline(rider.lat, rider.lon, POLY_KM);
+        const staleCls = rider.stale ? " stale" : "";
+        return '<div class="crew-row' + staleCls + '">' +
+          '<div class="crew-name">' + escapeHtml(rider.name) + '</div>' +
+          '<div class="crew-km">km ' + proj.km_on_route.toFixed(0) + '</div>' +
+          '<div class="crew-age">' + formatCrewAgeS(rider.ageS) + '</div>' +
+          '</div>';
+      }).join("");
+    }
+
+    function renderCrewPanel() {
+      if (!crewSyncEnabled()) {
+        const glancePanel = document.getElementById("crew-panel-glance");
+        const mapPanel = document.getElementById("crew-panel-map");
+        if (glancePanel) glancePanel.classList.remove("visible");
+        if (mapPanel) mapPanel.classList.remove("visible");
+        clearCrewMarkers();
+        return;
+      }
+      const html = renderCrewListHtml();
+      const glanceList = document.getElementById("crew-list-glance");
+      const mapList = document.getElementById("crew-list-map");
+      const glancePanel = document.getElementById("crew-panel-glance");
+      const mapPanel = document.getElementById("crew-panel-map");
+      if (glanceList) glanceList.innerHTML = html;
+      if (mapList) mapList.innerHTML = html;
+      if (glancePanel) glancePanel.classList.add("visible");
+      if (mapPanel) mapPanel.classList.add("visible");
+      renderCrewMarkers();
+    }
+
+    async function publishMyPosition(fix) {
+      if (!crewSyncEnabled() || !navigator.onLine) return;
+      const identity = await ensureCrewIdentity();
+      if (!identity || !fix) return;
+      try {
+        await publishCrewPosition({
+          dbUrl: CREW_SYNC.dbUrl,
+          roomId: CREW_SYNC.roomId,
+          riderSlug: identity.slug,
+          name: identity.name,
+          lat: fix.lat,
+          lon: fix.lon,
+          ts: fix.ts,
+        });
+      } catch (e) {
+        if (!publishMyPosition._warned) {
+          publishMyPosition._warned = true;
+          showToast("Partage équipe indisponible", "warn", 3000);
+        }
+      }
+    }
+
+    async function refreshCrewPositions() {
+      if (!crewSyncEnabled() || !navigator.onLine) return;
+      loadCrewIdentity();
+      try {
+        const raw = await fetchCrewPositions({
+          dbUrl: CREW_SYNC.dbUrl,
+          roomId: CREW_SYNC.roomId,
+        });
+        const nowS = Math.round(Date.now() / 1000);
+        const selfSlug = crewIdentity ? crewIdentity.slug : "";
+        crewRiders = parseCrewRiders(raw, selfSlug, nowS, CREW_SYNC.staleAfterS);
+        renderCrewPanel();
+      } catch (e) {
+        // Keep last known crew list when offline or fetch fails.
+      }
+    }
+
+    function startCrewPolling() {
+      if (!crewSyncEnabled() || crewPollTimer) return;
+      crewPollTimer = setInterval(() => {
+        if (document.hidden || !navigator.onLine) return;
+        refreshCrewPositions();
+      }, 120000);
+    }
+
+    async function initCrewSync() {
+      if (!crewSyncEnabled()) return;
+      await ensureCrewIdentity();
+      await refreshCrewPositions();
+      startCrewPolling();
+    }
+
     // ===== Render =====
     function render(opts) {
       const recenter = !!(opts && opts.recenter);
@@ -2339,6 +2749,7 @@ function updatePaceState({
 
       renderCheckpoints();
       renderGlance();
+      renderCrewPanel();
       renderElevation();
       renderPois();
       renderHistory();
@@ -2524,6 +2935,8 @@ function updatePaceState({
         history.push(newEntry);
         saveHistory(history);
         render({recenter: true});
+        await publishMyPosition(fix);
+        await refreshCrewPositions();
       } catch (e) {
         const msg = e.message || e;
         if (!silent) showToast("Erreur GPS : " + msg, "error", String(msg).includes("HTTP") ? 7000 : 4000);
@@ -2693,13 +3106,18 @@ function updatePaceState({
 
     document.addEventListener("visibilitychange", () => {
       if (document.hidden) { if (mapEngine === "leaflet") {} else map.stop(); }
-      else { if (mapEngine === "leaflet") map.invalidateSize(); else map.resize(); }
+      else {
+        if (mapEngine === "leaflet") map.invalidateSize();
+        else map.resize();
+        if (crewSyncEnabled() && navigator.onLine) refreshCrewPositions();
+      }
     });
 
     // Initial render
     setElevationMode(elevationMode);
     setViewMode(viewMode);
     render({recenter: history.length > 0});
+    initCrewSync();
     recordConsultation({forceGps: false, silent: true});
   </script>
 

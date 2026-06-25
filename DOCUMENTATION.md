@@ -42,6 +42,19 @@ Le swipe est désactivé sur la carte, les listes et le profil (scroll / pan car
 
 ---
 
+## Équipe (partage de position)
+
+Si le partage est activé sur le site déployé :
+
+- **Pas de compte** : au premier lancement, saisis ton prénom (ou ouvre un lien du type `?rider=tom`).
+- Chaque **Refresh GPS** envoie ta position aux autres coureurs de l'équipe.
+- Le panneau **Équipe** (vue Glance + carte) affiche les autres : prénom, km sur la trace, temps depuis la dernière mise à jour.
+- Des marqueurs colorés sur la carte indiquent où sont les autres.
+- Nécessite du **réseau** pour publier/recevoir (pas de sync offline).
+- Les positions sont visibles par toute personne disposant de l'app et de la salle partagée — usage entre amis sur la course uniquement.
+
+---
+
 ## Détection automatique des pauses
 
 Pas de bouton pause à appuyer. L'algorithme analyse chaque segment entre deux refresh :
@@ -121,6 +134,7 @@ Heures limites et temps de contrôle : **fiche officielle BRM** (l'app affiche d
 
 - Pas de navigation turn-by-turn.
 - Pas de suivi live permanent (choix batterie).
+- Partage équipe : mise à jour uniquement à chaque refresh GPS (pas de tracking continu des autres).
 - POI issus d'OpenStreetMap / OnRouteMap : **vérifier sur place** (horaires, eau réellement dispo).
 - Une seule trace : parcours **non bouclé** (1022 km linéaires).
 - Détection de pause heuristique : micro-arrêts < ~15 min peuvent encore influencer le ratio ; refresh espacés après un ravito aident.

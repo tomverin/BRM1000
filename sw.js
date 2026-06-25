@@ -1,4 +1,4 @@
-const CACHE_APP = 'c555-app-v1782030168';
+const CACHE_APP = 'c555-app-v1782394197';
 const CACHE_TILES = 'c555-tiles-v1';
 const APP_SHELL = ["./index.html", "./manifest.webmanifest", "./aide.html"];
 
@@ -17,6 +17,11 @@ self.addEventListener('activate', e => {
 
 self.addEventListener('fetch', e => {
   const url = new URL(e.request.url);
+  // Crew positions: always network (never cache stale rider locations).
+  if (url.hostname.includes('firebasedatabase.app') || url.hostname.includes('firebaseio.com')) {
+    e.respondWith(fetch(e.request));
+    return;
+  }
   // Tile requests: cache-first
   if (url.hostname.includes('tiles.openfreemap.org') && (url.pathname.includes('.pbf') || url.pathname.includes('/fonts/') || url.pathname.includes('/sprites/'))) {
     e.respondWith(

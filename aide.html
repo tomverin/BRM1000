@@ -111,6 +111,17 @@
     </ul>
     <p><strong>Conseil</strong> : refresh au départ, puis régulièrement en roulant (toutes les 15–30 min). Après un long arrêt, un refresh suffit : l&#x27;app gère la pause automatiquement.</p>
     <hr>
+    <h2>Équipe (partage de position)</h2>
+    <p>Si le partage est activé sur le site déployé :</p>
+    <ul>
+    <li><strong>Pas de compte</strong> : au premier lancement, saisis ton prénom (ou ouvre un lien du type <code>?rider=tom</code>).</li>
+    <li>Chaque <strong>Refresh GPS</strong> envoie ta position aux autres coureurs de l&#x27;équipe.</li>
+    <li>Le panneau <strong>Équipe</strong> (vue Glance + carte) affiche les autres : prénom, km sur la trace, temps depuis la dernière mise à jour.</li>
+    <li>Des marqueurs colorés sur la carte indiquent où sont les autres.</li>
+    <li>Nécessite du <strong>réseau</strong> pour publier/recevoir (pas de sync offline).</li>
+    <li>Les positions sont visibles par toute personne disposant de l&#x27;app et de la salle partagée — usage entre amis sur la course uniquement.</li>
+    </ul>
+    <hr>
     <h2>Détection automatique des pauses</h2>
     <p>Pas de bouton pause à appuyer. L&#x27;algorithme analyse chaque segment entre deux refresh :</p>
     <ol>
@@ -220,6 +231,7 @@
     <ul>
     <li>Pas de navigation turn-by-turn.</li>
     <li>Pas de suivi live permanent (choix batterie).</li>
+    <li>Partage équipe : mise à jour uniquement à chaque refresh GPS (pas de tracking continu des autres).</li>
     <li>POI issus d&#x27;OpenStreetMap / OnRouteMap : <strong>vérifier sur place</strong> (horaires, eau réellement dispo).</li>
     <li>Une seule trace : parcours <strong>non bouclé</strong> (1022 km linéaires).</li>
     <li>Détection de pause heuristique : micro-arrêts &lt; ~15 min peuvent encore influencer le ratio ; refresh espacés après un ravito aident.</li>
