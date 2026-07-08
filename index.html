@@ -251,6 +251,8 @@
     .crew-modal input { width: 100%; box-sizing: border-box; padding: 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: #fff; font-size: 18px; font-weight: 700; }
     .crew-modal .actions { margin-top: 12px; display: flex; gap: 8px; }
     .crew-modal .actions button { flex: 1; min-height: 48px; font-size: 16px; font-weight: 800; }
+    .crew-publish-status { font-size: 13px; font-weight: 800; color: var(--ok); margin-top: 6px; display: none; }
+    .crew-publish-status.visible { display: block; }
   </style>
 </head>
 <body class="glance-mode">
@@ -304,8 +306,9 @@
       <div class="glance-card glance-tile"><div class="icon">🔧</div><div><div class="name">Service</div><div id="glance-service-distance" class="dist">—</div></div></div>
     </div>
 
-    <div id="crew-panel-glance" class="glance-card crew-panel" style="padding:10px" aria-label="Équipe">
-      <div class="crew-title">Équipe</div>
+    <div id="crew-panel-glance" class="glance-card crew-panel" style="padding:10px" aria-label="Coureurs">
+      <div class="crew-title">Coureurs</div>
+      <div id="crew-publish-status" class="crew-publish-status"></div>
       <div id="crew-list-glance"></div>
     </div>
 
@@ -427,7 +430,7 @@
   </div>
 
   <div class="panel tools-panel" style="padding: 8px 12px;">
-    <div class="actions" style="margin-bottom:8px"><a href="aide.html" class="btn-owaka" style="text-align:center;flex:1">📖 Documentation</a></div>
+    <div class="actions" style="margin-bottom:8px"><a href="coureur.html" class="btn-owaka" style="text-align:center;flex:1">📡 Mode coureur (partager)</a></div><div class="actions" style="margin-bottom:8px"><a href="aide.html" class="btn-owaka" style="text-align:center;flex:1">📖 Documentation</a></div>
     <div class="actions" style="margin-top: 0;">
       <button id="btn-map-toggle">🗺️ Raster</button>
       <button id="btn-precache">📥 Pré-charger tuiles</button>
@@ -444,17 +447,6 @@
   </div>
 
   <div id="toast" class="toast"></div>
-
-  <div id="crew-modal-backdrop" class="crew-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="crew-modal-title">
-    <div class="crew-modal">
-      <h3 id="crew-modal-title">Ton prénom</h3>
-      <p>Partagé avec l'équipe sur la carte (pas de compte requis).</p>
-      <input id="crew-modal-input" type="text" maxlength="32" autocomplete="nickname" placeholder="Ex. Tom">
-      <div class="actions">
-        <button type="button" id="crew-modal-submit" class="primary">Valider</button>
-      </div>
-    </div>
-  </div>
 
   <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -1615,6 +1607,7 @@ function crewInitials(name) {
     const POSITION_CACHE_KEY = `${STORAGE_KEY}:gps-session-cache`;
     const CREW_RIDER_SLUG_KEY = `${STORAGE_KEY}:crew-rider-slug`;
     const CREW_RIDER_NAME_KEY = `${STORAGE_KEY}:crew-rider-name`;
+    const CREW_PUBLISH_KEY = `${STORAGE_KEY}:crew-publish-enabled`;
     const POSITION_CACHE_MAX_AGE_S = 30;
     function loadHistory() {
       try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"); }
@@ -2480,26 +2473,17 @@ function crewInitials(name) {
       return !!(CREW_SYNC && CREW_SYNC.enabled && CREW_SYNC.dbUrl && CREW_SYNC.roomId);
     }
 
+    function crewPublishEnabled() {
+      try { return localStorage.getItem(CREW_PUBLISH_KEY) === "1"; } catch (e) { return false; }
+    }
+
     function readCrewIdentityFromUrl() {
-      const params = new URLSearchParams(location.search);
-      const raw = params.get("rider") || params.get("name");
-      if (!raw) return null;
-      const name = String(raw).trim();
-      if (!name) return null;
-      return { slug: slugifyRiderName(name), name };
+      return null;
     }
 
     function loadCrewIdentity() {
       if (crewIdentity) return crewIdentity;
-      const fromUrl = readCrewIdentityFromUrl();
-      if (fromUrl) {
-        try {
-          localStorage.setItem(CREW_RIDER_SLUG_KEY, fromUrl.slug);
-          localStorage.setItem(CREW_RIDER_NAME_KEY, fromUrl.name);
-        } catch (e) {}
-        crewIdentity = fromUrl;
-        return crewIdentity;
-      }
+      if (!crewPublishEnabled()) return null;
       try {
         const slug = localStorage.getItem(CREW_RIDER_SLUG_KEY);
         const name = localStorage.getItem(CREW_RIDER_NAME_KEY);
@@ -2518,50 +2502,32 @@ function crewInitials(name) {
       try {
         localStorage.setItem(CREW_RIDER_SLUG_KEY, identity.slug);
         localStorage.setItem(CREW_RIDER_NAME_KEY, identity.name);
+        localStorage.setItem(CREW_PUBLISH_KEY, "1");
       } catch (e) {}
       crewIdentity = identity;
       return identity;
     }
 
-    function showCrewNameModal() {
-      return new Promise(resolve => {
-        const backdrop = document.getElementById("crew-modal-backdrop");
-        const input = document.getElementById("crew-modal-input");
-        const submit = document.getElementById("crew-modal-submit");
-        if (!backdrop || !input || !submit) {
-          resolve(null);
-          return;
-        }
-        backdrop.classList.add("visible");
-        input.value = "";
-        input.focus();
-        function finish(value) {
-          backdrop.classList.remove("visible");
-          submit.removeEventListener("click", onSubmit);
-          input.removeEventListener("keydown", onKey);
-          resolve(value);
-        }
-        function onSubmit() {
-          const name = input.value.trim();
-          if (!name) {
-            input.focus();
-            return;
-          }
-          finish(saveCrewIdentity(name));
-        }
-        function onKey(ev) {
-          if (ev.key === "Enter") onSubmit();
-        }
-        submit.addEventListener("click", onSubmit);
-        input.addEventListener("keydown", onKey);
-      });
+    async function ensureCrewIdentity() {
+      return loadCrewIdentity();
     }
 
-    async function ensureCrewIdentity() {
-      if (!crewSyncEnabled()) return null;
-      const existing = loadCrewIdentity();
-      if (existing) return existing;
-      return showCrewNameModal();
+    function updateCrewPublishStatus() {
+      const el = document.getElementById("crew-publish-status");
+      if (!el) return;
+      const identity = loadCrewIdentity();
+      if (crewPublishEnabled() && identity) {
+        el.textContent = "Partage actif : " + identity.name;
+        el.classList.add("visible");
+      } else {
+        el.textContent = "";
+        el.classList.remove("visible");
+      }
+    }
+
+    function updateCrewPanelTitles() {
+      const title = crewPublishEnabled() ? "Équipe" : "Coureurs";
+      document.querySelectorAll(".crew-title").forEach(node => { node.textContent = title; });
     }
 
     function crewMarkerHtml(color, label) {
@@ -2636,7 +2602,10 @@ function crewInitials(name) {
 
     function renderCrewListHtml() {
       if (!crewRiders.length) {
-        return '<div class="crew-empty">Aucun autre coureur récent.</div>';
+        const msg = crewPublishEnabled()
+          ? "Aucun autre coureur récent."
+          : "Aucun coureur récent.";
+        return '<div class="crew-empty">' + msg + '</div>';
       }
       return crewRiders.map(rider => {
         const proj = projectOnPolyline(rider.lat, rider.lon, POLY_KM);
@@ -2658,6 +2627,8 @@ function crewInitials(name) {
         clearCrewMarkers();
         return;
       }
+      updateCrewPanelTitles();
+      updateCrewPublishStatus();
       const html = renderCrewListHtml();
       const glanceList = document.getElementById("crew-list-glance");
       const mapList = document.getElementById("crew-list-map");
@@ -2672,9 +2643,16 @@ function crewInitials(name) {
     }
 
     async function publishMyPosition(fix) {
-      if (!crewSyncEnabled() || !navigator.onLine) return;
-      const identity = await ensureCrewIdentity();
-      if (!identity || !fix) return;
+      if (!crewSyncEnabled() || !crewPublishEnabled() || !navigator.onLine) return;
+      const identity = loadCrewIdentity();
+      if (!identity) {
+        if (!publishMyPosition._hinted) {
+          publishMyPosition._hinted = true;
+          showToast("Partage désactivé — configure ton pseudo sur coureur.html", "warn", 6000);
+        }
+        return;
+      }
+      if (!fix) return;
       try {
         await publishCrewPosition({
           dbUrl: CREW_SYNC.dbUrl,
@@ -2709,7 +2687,7 @@ function crewInitials(name) {
           roomId: CREW_SYNC.roomId,
         });
         const nowS = Math.round(Date.now() / 1000);
-        const selfSlug = crewIdentity ? crewIdentity.slug : "";
+        const selfSlug = crewPublishEnabled() && crewIdentity ? crewIdentity.slug : "";
         crewRiders = parseCrewRiders(raw, selfSlug, nowS, CREW_SYNC.staleAfterS);
         renderCrewPanel();
       } catch (e) {
@@ -2727,7 +2705,7 @@ function crewInitials(name) {
 
     async function initCrewSync() {
       if (!crewSyncEnabled()) return;
-      await ensureCrewIdentity();
+      loadCrewIdentity();
       await refreshCrewPositions();
       startCrewPolling();
     }

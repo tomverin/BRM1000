@@ -83,7 +83,7 @@ Le modèle ignore les segments trop courts (< 5 km ou < 10 min) pour éviter le 
 
 ## POIs (points d'intérêt)
 
-**~385 POI** le long du parcours (OnRouteMap + BPF/ravitos orga) :
+**~367 POI** le long du parcours (OnRouteMap 3 parties + BPF/ravitos orga) :
 
 - **Eau** : fontaines, cimetières (eau potable)
 - **Solide** : boulangeries, cafés, supermarchés, restauration rapide, BPF orga

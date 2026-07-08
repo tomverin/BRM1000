@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0f1419">
+  <title>BRM 1000 CCK 2026 — Mode coureur</title>
+  <style>
+    :root {{
+      --bg: #0f1419; --bg2: #1a2332; --fg: #e8eaed; --muted: #9aa0a6;
+      --accent: #fbbf24; --border: #2d3748; --ok: #34d399;
+    }}
+    * {{ box-sizing: border-box; }}
+    body {{
+      margin: 0; min-height: 100dvh; display: flex; flex-direction: column;
+      font-family: system-ui, -apple-system, sans-serif;
+      background: var(--bg); color: var(--fg); line-height: 1.5;
+    }}
+    header {{
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 16px; border-bottom: 1px solid var(--border);
+      background: rgba(15,20,25,0.95);
+    }}
+    header a {{ color: var(--accent); text-decoration: none; font-weight: 800; }}
+    main {{
+      flex: 1; display: flex; align-items: center; justify-content: center;
+      padding: 24px 16px 40px;
+    }}
+    .card {{
+      width: min(100%, 400px); background: var(--bg2);
+      border: 1px solid var(--border); border-radius: 12px; padding: 22px;
+    }}
+    h1 {{ margin: 0 0 8px; font-size: 1.35rem; color: #fff; }}
+    p {{ margin: 0 0 16px; color: var(--muted); font-size: 14px; }}
+    label {{ display: block; font-size: 13px; font-weight: 800; color: var(--muted); margin-bottom: 8px; }}
+    input {{
+      width: 100%; padding: 14px; border-radius: 8px; border: 1px solid var(--border);
+      background: var(--bg); color: #fff; font-size: 18px; font-weight: 700;
+    }}
+    .actions {{ display: flex; flex-direction: column; gap: 10px; margin-top: 18px; }}
+    button, .btn {{
+      display: block; width: 100%; min-height: 48px; border-radius: 8px;
+      border: 1px solid var(--border); font-size: 16px; font-weight: 800; cursor: pointer;
+      text-align: center; text-decoration: none; line-height: 48px;
+    }}
+    button.primary {{ background: var(--accent); color: #0f1419; border-color: var(--accent); }}
+    .btn.secondary {{ background: var(--bg); color: var(--fg); }}
+    .btn.ghost {{ background: transparent; color: var(--muted); border: none; min-height: 40px; line-height: 40px; }}
+    .status {{
+      margin-top: 14px; padding: 10px 12px; border-radius: 8px;
+      background: rgba(52,211,153,0.12); border: 1px solid rgba(52,211,153,0.35);
+      color: var(--ok); font-size: 14px; font-weight: 700; display: none;
+    }}
+    .status.visible {{ display: block; }}
+  </style>
+</head>
+<body>
+  <header>
+    <a href="index.html">← App</a>
+    <span style="color:var(--muted);font-size:12px">BRM 1000 CCK BFC 2026</span>
+  </header>
+  <main>
+    <div class="card">
+      <h1>Mode coureur</h1>
+      <p>Choisis un pseudo pour <strong>partager ta position</strong> avec l'équipe à chaque refresh GPS. Sans compte requis.</p>
+      <p style="margin-bottom:20px">Pour <strong>suivre sans partager</strong> (famille, support), ouvre simplement <a href="index.html" style="color:var(--accent)">l'app</a> — mode visiteur.</p>
+      <label for="rider-name">Ton pseudo</label>
+      <input id="rider-name" type="text" maxlength="32" autocomplete="nickname" placeholder="Ex. Tom">
+      <div id="publish-status" class="status" role="status"></div>
+      <div class="actions">
+        <button type="button" id="btn-activate" class="primary">Activer le partage et ouvrir l'app</button>
+        <a href="index.html" class="btn secondary">Ouvrir en mode visiteur</a>
+        <button type="button" id="btn-stop" class="btn ghost">Arrêter le partage</button>
+      </div>
+    </div>
+  </main>
+  <script>
+    const STORAGE_KEY = "pace-test:brm-1000-cck-bfc-2026:1021km:v2";
+    const CREW_RIDER_SLUG_KEY = `${STORAGE_KEY}:crew-rider-slug`;
+    const CREW_RIDER_NAME_KEY = `${STORAGE_KEY}:crew-rider-name`;
+    const CREW_PUBLISH_KEY = `${STORAGE_KEY}:crew-publish-enabled`;
+
+    function slugifyRiderName(name) {
+      const s = String(name || "").trim().toLowerCase()
+        .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+      return s || "rider";
+    }
+
+    function loadSaved() {
+      try {
+        return {
+          slug: localStorage.getItem(CREW_RIDER_SLUG_KEY) || "",
+          name: localStorage.getItem(CREW_RIDER_NAME_KEY) || "",
+          publish: localStorage.getItem(CREW_PUBLISH_KEY) === "1",
+        };
+      } catch (e) {
+        return { slug: "", name: "", publish: false };
+      }
+    }
+
+    function saveRider(name, publish) {
+      const trimmed = String(name || "").trim();
+      if (!trimmed) return false;
+      const slug = slugifyRiderName(trimmed);
+      try {
+        localStorage.setItem(CREW_RIDER_SLUG_KEY, slug);
+        localStorage.setItem(CREW_RIDER_NAME_KEY, trimmed);
+        if (publish) localStorage.setItem(CREW_PUBLISH_KEY, "1");
+        else localStorage.removeItem(CREW_PUBLISH_KEY);
+      } catch (e) {
+        return false;
+      }
+      return true;
+    }
+
+    function updateStatus() {
+      const saved = loadSaved();
+      const status = document.getElementById("publish-status");
+      if (saved.publish && saved.name) {
+        status.textContent = "Partage actif : " + saved.name;
+        status.classList.add("visible");
+      } else {
+        status.classList.remove("visible");
+      }
+    }
+
+    const input = document.getElementById("rider-name");
+    const params = new URLSearchParams(location.search);
+    const fromUrl = params.get("rider") || params.get("name");
+    const saved = loadSaved();
+    input.value = (fromUrl || saved.name || "").trim();
+
+    document.getElementById("btn-activate").addEventListener("click", () => {
+      const name = input.value.trim();
+      if (!name) {
+        input.focus();
+        return;
+      }
+      if (!saveRider(name, true)) {
+        alert("Impossible d'enregistrer le pseudo (stockage local bloqué).");
+        return;
+      }
+      location.href = "index.html";
+    });
+
+    document.getElementById("btn-stop").addEventListener("click", () => {
+      try { localStorage.removeItem(CREW_PUBLISH_KEY); } catch (e) {}
+      updateStatus();
+    });
+
+    updateStatus();
+  </script>
+</body>
+</html>

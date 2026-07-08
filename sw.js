@@ -1,6 +1,6 @@
-const CACHE_APP = 'c555-app-v1783498018';
+const CACHE_APP = 'c555-app-v1783498393';
 const CACHE_TILES = 'c555-tiles-v1';
-const APP_SHELL = ["./index.html", "./manifest.webmanifest", "./aide.html"];
+const APP_SHELL = ["./index.html", "./manifest.webmanifest", "./aide.html", "./coureur.html"];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE_APP).then(c => c.addAll(APP_SHELL)));
