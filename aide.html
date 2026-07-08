@@ -112,14 +112,22 @@
     <p><strong>Conseil</strong> : refresh au départ, puis régulièrement en roulant (toutes les 15–30 min). Après un long arrêt, un refresh suffit : l&#x27;app gère la pause automatiquement.</p>
     <hr>
     <h2>Équipe (partage de position)</h2>
-    <p>Si le partage est activé sur le site déployé :</p>
+    <p>Trois coureurs peuvent voir la position des autres sur la carte, <strong>sans compte</strong>.</p>
+    <h3>Mode visiteur (suivi seulement)</h3>
+    <p>Ouvre <strong>https://tomverin.github.io/BRM1000/</strong> — tu vois les coureurs sur la carte et dans le panneau <strong>Coureurs</strong>, mais <strong>ta position n&#x27;est jamais partagée</strong>. Idéal pour la famille ou le support.</p>
+    <h3>Mode coureur (partager sa position)</h3>
+    <ol>
+    <li>Ouvre <strong>https://tomverin.github.io/BRM1000/coureur.html</strong></li>
+    <li>Saisis ton pseudo → <strong>Activer le partage et ouvrir l&#x27;app</strong></li>
+    <li>Chaque <strong>Refresh GPS</strong> publie ta position aux autres</li>
+    </ol>
+    <p>Lien direct : <code>coureur.html?rider=tom</code></p>
+    <p>Pour <strong>arrêter le partage</strong> : bouton sur <code>coureur.html</code>.</p>
     <ul>
-    <li><strong>Pas de compte</strong> : au premier lancement, saisis ton prénom (ou ouvre un lien du type <code>?rider=tom</code>).</li>
-    <li>Chaque <strong>Refresh GPS</strong> envoie ta position aux autres coureurs de l&#x27;équipe.</li>
-    <li>Le panneau <strong>Équipe</strong> (vue Glance + carte) affiche les autres : prénom, km sur la trace, temps depuis la dernière mise à jour.</li>
-    <li>Des marqueurs colorés sur la carte indiquent où sont les autres.</li>
-    <li>Nécessite du <strong>réseau</strong> pour publier/recevoir (pas de sync offline).</li>
-    <li>Les positions sont visibles par toute personne disposant de l&#x27;app et de la salle partagée — usage entre amis sur la course uniquement.</li>
+    <li>Panneau <strong>Coureurs</strong> / <strong>Équipe</strong> (vue Glance + carte) : prénom, km sur la trace, délai depuis la dernière mise à jour</li>
+    <li>Marqueurs colorés sur la carte</li>
+    <li>Nécessite du <strong>réseau</strong> pour publier/recevoir (pas de sync offline)</li>
+    <li>Les positions sont visibles par toute personne disposant de l&#x27;app et de la salle partagée — usage entre amis sur la course uniquement</li>
     </ul>
     <hr>
     <h2>Détection automatique des pauses</h2>

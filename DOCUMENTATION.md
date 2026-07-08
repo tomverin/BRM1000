@@ -44,14 +44,26 @@ Le swipe est désactivé sur la carte, les listes et le profil (scroll / pan car
 
 ## Équipe (partage de position)
 
-Si le partage est activé sur le site déployé :
+Trois coureurs peuvent voir la position des autres sur la carte, **sans compte**.
 
-- **Pas de compte** : au premier lancement, saisis ton prénom (ou ouvre un lien du type `?rider=tom`).
-- Chaque **Refresh GPS** envoie ta position aux autres coureurs de l'équipe.
-- Le panneau **Équipe** (vue Glance + carte) affiche les autres : prénom, km sur la trace, temps depuis la dernière mise à jour.
-- Des marqueurs colorés sur la carte indiquent où sont les autres.
-- Nécessite du **réseau** pour publier/recevoir (pas de sync offline).
-- Les positions sont visibles par toute personne disposant de l'app et de la salle partagée — usage entre amis sur la course uniquement.
+### Mode visiteur (suivi seulement)
+
+Ouvre **https://tomverin.github.io/BRM1000/** — tu vois les coureurs sur la carte et dans le panneau **Coureurs**, mais **ta position n'est jamais partagée**. Idéal pour la famille ou le support.
+
+### Mode coureur (partager sa position)
+
+1. Ouvre **https://tomverin.github.io/BRM1000/coureur.html**
+2. Saisis ton pseudo → **Activer le partage et ouvrir l'app**
+3. Chaque **Refresh GPS** publie ta position aux autres
+
+Lien direct : `coureur.html?rider=tom`
+
+Pour **arrêter le partage** : bouton sur `coureur.html`.
+
+- Panneau **Coureurs** / **Équipe** (vue Glance + carte) : prénom, km sur la trace, délai depuis la dernière mise à jour
+- Marqueurs colorés sur la carte
+- Nécessite du **réseau** pour publier/recevoir (pas de sync offline)
+- Les positions sont visibles par toute personne disposant de l'app et de la salle partagée — usage entre amis sur la course uniquement
 
 ---
 

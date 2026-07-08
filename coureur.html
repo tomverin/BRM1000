@@ -2,75 +2,123 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, viewport-fit=cover">
   <meta name="theme-color" content="#0f1419">
   <title>BRM 1000 CCK 2026 — Mode coureur</title>
+  <link rel="manifest" href="manifest.webmanifest">
   <style>
-    :root {{
-      --bg: #0f1419; --bg2: #1a2332; --fg: #e8eaed; --muted: #9aa0a6;
-      --accent: #fbbf24; --border: #2d3748; --ok: #34d399;
-    }}
-    * {{ box-sizing: border-box; }}
-    body {{
-      margin: 0; min-height: 100dvh; display: flex; flex-direction: column;
-      font-family: system-ui, -apple-system, sans-serif;
-      background: var(--bg); color: var(--fg); line-height: 1.5;
-    }}
-    header {{
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 12px 16px; border-bottom: 1px solid var(--border);
-      background: rgba(15,20,25,0.95);
-    }}
-    header a {{ color: var(--accent); text-decoration: none; font-weight: 800; }}
-    main {{
+    :root {
+      --bg: #0f1419;
+      --bg2: #1a1f26;
+      --fg: #f3f4f6;
+      --muted: #b8c0cd;
+      --accent: #fbbf24;
+      --green: #4ade80;
+      --border: #2a3038;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0; padding: 0; min-height: 100%;
+      background: var(--bg); color: var(--fg);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 16px; line-height: 1.45;
+    }
+    body { display: flex; flex-direction: column; min-height: 100dvh; }
+    header {
+      background: #05070a; padding: 10px 12px;
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 10;
+    }
+    .header-back {
+      color: var(--accent); text-decoration: none; font-weight: 900; font-size: 15px;
+      padding: 8px 10px; border-radius: 7px; background: #111827; border: 1px solid var(--border);
+    }
+    .header-back:hover { background: #1f2937; }
+    .header-title {
+      color: #fff; font-size: 14px; font-weight: 900; letter-spacing: -0.02em;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .header-sub { color: var(--muted); font-size: 11px; font-weight: 700; margin-top: 2px; }
+    main {
       flex: 1; display: flex; align-items: center; justify-content: center;
-      padding: 24px 16px 40px;
-    }}
-    .card {{
-      width: min(100%, 400px); background: var(--bg2);
-      border: 1px solid var(--border); border-radius: 12px; padding: 22px;
-    }}
-    h1 {{ margin: 0 0 8px; font-size: 1.35rem; color: #fff; }}
-    p {{ margin: 0 0 16px; color: var(--muted); font-size: 14px; }}
-    label {{ display: block; font-size: 13px; font-weight: 800; color: var(--muted); margin-bottom: 8px; }}
-    input {{
-      width: 100%; padding: 14px; border-radius: 8px; border: 1px solid var(--border);
-      background: var(--bg); color: #fff; font-size: 18px; font-weight: 700;
-    }}
-    .actions {{ display: flex; flex-direction: column; gap: 10px; margin-top: 18px; }}
-    button, .btn {{
+      padding: 16px 12px 32px; background: #05070a;
+    }
+    .card {
+      width: min(100%, 440px);
+      background: linear-gradient(180deg, #101923, #070b11);
+      border: 1px solid #263240; border-radius: 10px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.32);
+      padding: 18px 16px 16px;
+    }
+    .card-kicker {
+      color: var(--accent); font-size: 11px; font-weight: 900;
+      letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 6px;
+    }
+    h1 { margin: 0 0 12px; font-size: clamp(24px, 6vw, 30px); color: #fff; font-weight: 900; letter-spacing: -0.03em; }
+    p { margin: 0 0 14px; color: var(--muted); font-size: 15px; }
+    p strong { color: #fff; }
+    p a { color: var(--accent); font-weight: 800; text-decoration: none; }
+    p a:hover { text-decoration: underline; }
+    .hint-box {
+      margin: 0 0 18px; padding: 10px 12px; border-radius: 8px;
+      background: rgba(96,165,250,0.08); border: 1px solid rgba(96,165,250,0.25);
+      color: #dbeafe; font-size: 14px; font-weight: 700;
+    }
+    label {
+      display: block; font-size: 11px; font-weight: 900; color: #fff;
+      letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 8px;
+    }
+    input {
+      width: 100%; padding: 14px 12px; border-radius: 8px;
+      border: 1px solid var(--border); background: #0b1017; color: #fff;
+      font-size: 20px; font-weight: 900; letter-spacing: -0.02em;
+    }
+    input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+    input::placeholder { color: #64748b; font-weight: 700; }
+    .status {
+      margin-top: 12px; padding: 10px 12px; border-radius: 8px; display: none;
+      background: rgba(74,222,128,0.12); border: 1px solid rgba(74,222,128,0.35);
+      color: var(--green); font-size: 14px; font-weight: 900;
+    }
+    .status.visible { display: block; }
+    .actions { display: grid; gap: 8px; margin-top: 18px; }
+    button, .btn {
       display: block; width: 100%; min-height: 48px; border-radius: 8px;
-      border: 1px solid var(--border); font-size: 16px; font-weight: 800; cursor: pointer;
-      text-align: center; text-decoration: none; line-height: 48px;
-    }}
-    button.primary {{ background: var(--accent); color: #0f1419; border-color: var(--accent); }}
-    .btn.secondary {{ background: var(--bg); color: var(--fg); }}
-    .btn.ghost {{ background: transparent; color: var(--muted); border: none; min-height: 40px; line-height: 40px; }}
-    .status {{
-      margin-top: 14px; padding: 10px 12px; border-radius: 8px;
-      background: rgba(52,211,153,0.12); border: 1px solid rgba(52,211,153,0.35);
-      color: var(--ok); font-size: 14px; font-weight: 700; display: none;
-    }}
-    .status.visible {{ display: block; }}
+      border: 1px solid var(--border); font-size: 16px; font-weight: 900;
+      cursor: pointer; text-align: center; text-decoration: none; line-height: 1.2;
+      padding: 12px 14px;
+    }
+    button { background: #1f2937; color: var(--fg); }
+    button:hover { background: #2d3744; }
+    button.primary { background: var(--accent); color: #1a1100; border-color: var(--accent); }
+    button.primary:hover { filter: brightness(1.05); }
+    .btn.secondary { background: #111827; color: var(--fg); }
+    .btn.secondary:hover { background: #1f2937; }
+    button.ghost { background: transparent; color: var(--muted); border-color: transparent; min-height: 40px; font-size: 14px; }
+    button.ghost:hover { color: #fff; background: transparent; }
   </style>
 </head>
 <body>
   <header>
-    <a href="index.html">← App</a>
-    <span style="color:var(--muted);font-size:12px">BRM 1000 CCK BFC 2026</span>
+    <a href="index.html" class="header-back">← App</a>
+    <div style="min-width:0;text-align:right">
+      <div class="header-title">BRM 1000 CCK 2026</div>
+      <div class="header-sub">BRM 1000 CCK BFC 2026</div>
+    </div>
   </header>
   <main>
     <div class="card">
+      <div class="card-kicker">Partage GPS équipe</div>
       <h1>Mode coureur</h1>
-      <p>Choisis un pseudo pour <strong>partager ta position</strong> avec l'équipe à chaque refresh GPS. Sans compte requis.</p>
-      <p style="margin-bottom:20px">Pour <strong>suivre sans partager</strong> (famille, support), ouvre simplement <a href="index.html" style="color:var(--accent)">l'app</a> — mode visiteur.</p>
+      <p>Choisis un pseudo pour <strong>partager ta position</strong> à chaque refresh GPS. Sans compte requis.</p>
+      <div class="hint-box">Famille / support : ouvre <a href="index.html" style="color:#93c5fd">l'app</a> directement — mode visiteur, sans partage.</div>
       <label for="rider-name">Ton pseudo</label>
-      <input id="rider-name" type="text" maxlength="32" autocomplete="nickname" placeholder="Ex. Tom">
+      <input id="rider-name" type="text" maxlength="32" autocomplete="nickname" placeholder="Ex. Tom" enterkeyhint="go">
       <div id="publish-status" class="status" role="status"></div>
       <div class="actions">
         <button type="button" id="btn-activate" class="primary">Activer le partage et ouvrir l'app</button>
         <a href="index.html" class="btn secondary">Ouvrir en mode visiteur</a>
-        <button type="button" id="btn-stop" class="btn ghost">Arrêter le partage</button>
+        <button type="button" id="btn-stop" class="ghost">Arrêter le partage</button>
       </div>
     </div>
   </main>
@@ -142,6 +190,10 @@
         return;
       }
       location.href = "index.html";
+    });
+
+    input.addEventListener("keydown", (ev) => {
+      if (ev.key === "Enter") document.getElementById("btn-activate").click();
     });
 
     document.getElementById("btn-stop").addEventListener("click", () => {
