@@ -243,6 +243,15 @@
     .crew-empty { color: var(--muted); font-size: 15px; font-weight: 700; }
     .crew-map-overlay { position: absolute; z-index: 6; top: 10px; left: 10px; max-width: min(92vw, 280px); background: rgba(15,20,25,0.9); border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; display: none; }
     .crew-map-overlay.visible { display: block; }
+    .crew-map-list {
+      --crew-list-row-h: 38px;
+      max-height: calc(5 * var(--crew-list-row-h));
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+      margin-right: -4px;
+      padding-right: 4px;
+    }
     .crew-modal-backdrop { position: fixed; inset: 0; z-index: 20000; background: rgba(0,0,0,0.72); display: none; align-items: center; justify-content: center; padding: 20px; }
     .crew-modal-backdrop.visible { display: flex; }
     .crew-modal { width: min(100%, 360px); background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 18px; }
@@ -373,7 +382,7 @@
     <div id="map"></div>
     <div id="crew-panel-map" class="crew-map-overlay" aria-label="Équipe sur la carte">
       <div class="crew-title">Équipe</div>
-      <div id="crew-list-map"></div>
+      <div id="crew-list-map" class="crew-map-list"></div>
     </div>
     <div class="surface-legend" aria-label="Légende surface">
       <span><i class="surface-swatch"></i>Bitume</span>
