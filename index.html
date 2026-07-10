@@ -252,6 +252,13 @@
       margin-right: -4px;
       padding-right: 4px;
     }
+    .crew-glance-list {
+      --crew-list-row-h: 38px;
+      max-height: calc(3 * var(--crew-list-row-h));
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+    }
     .crew-modal-backdrop { position: fixed; inset: 0; z-index: 20000; background: rgba(0,0,0,0.72); display: none; align-items: center; justify-content: center; padding: 20px; }
     .crew-modal-backdrop.visible { display: flex; }
     .crew-modal { width: min(100%, 360px); background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 18px; }
@@ -318,7 +325,7 @@
     <div id="crew-panel-glance" class="glance-card crew-panel" style="padding:10px" aria-label="Coureurs">
       <div class="crew-title">Coureurs</div>
       <div id="crew-publish-status" class="crew-publish-status"></div>
-      <div id="crew-list-glance"></div>
+      <div id="crew-list-glance" class="crew-glance-list"></div>
     </div>
 
     <div class="glance-card glance-next">
@@ -2609,6 +2616,14 @@ function crewInitials(name) {
       });
     }
 
+    function crewRidersSortedByKm() {
+      return crewRiders.slice().sort((a, b) => {
+        const kmA = projectOnPolyline(a.lat, a.lon, POLY_KM).km_on_route;
+        const kmB = projectOnPolyline(b.lat, b.lon, POLY_KM).km_on_route;
+        return kmB - kmA;
+      });
+    }
+
     function renderCrewListHtml() {
       if (!crewRiders.length) {
         const msg = crewPublishEnabled()
@@ -2616,7 +2631,7 @@ function crewInitials(name) {
           : "Aucun coureur récent.";
         return '<div class="crew-empty">' + msg + '</div>';
       }
-      return crewRiders.map(rider => {
+      return crewRidersSortedByKm().map(rider => {
         const proj = projectOnPolyline(rider.lat, rider.lon, POLY_KM);
         const staleCls = rider.stale ? " stale" : "";
         return '<div class="crew-row' + staleCls + '">' +
