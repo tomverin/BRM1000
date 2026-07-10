@@ -75,6 +75,11 @@
     }
     input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
     input::placeholder { color: #64748b; font-weight: 700; }
+    .field-error {
+      display: none; margin-top: 8px; color: #fb7185; font-size: 14px; font-weight: 800;
+    }
+    .field-error.visible { display: block; }
+    input.invalid { border-color: #fb7185; }
     .status {
       margin-top: 12px; padding: 10px 12px; border-radius: 8px; display: none;
       background: rgba(74,222,128,0.12); border: 1px solid rgba(74,222,128,0.35);
@@ -113,7 +118,8 @@
       <p>Choisis un pseudo pour <strong>partager ta position</strong> à chaque refresh GPS. Sans compte requis.</p>
       <div class="hint-box">Famille / support : ouvre <a href="index.html" style="color:#93c5fd">l'app</a> directement — mode visiteur, sans partage.</div>
       <label for="rider-name">Ton pseudo</label>
-      <input id="rider-name" type="text" maxlength="32" autocomplete="nickname" placeholder="Ex. Tom" enterkeyhint="go">
+      <input id="rider-name" type="text" maxlength="32" autocomplete="off" autocapitalize="words" placeholder="Ton pseudo" enterkeyhint="go" required>
+      <div id="name-error" class="field-error" role="alert">Choisis un pseudo pour activer le partage.</div>
       <div id="publish-status" class="status" role="status"></div>
       <div class="actions">
         <button type="button" id="btn-activate" class="primary">Activer le partage et ouvrir l'app</button>
@@ -173,18 +179,40 @@
       }
     }
 
+    function showNameError(message) {
+      const error = document.getElementById("name-error");
+      error.textContent = message;
+      error.classList.add("visible");
+      input.classList.add("invalid");
+      input.setAttribute("aria-invalid", "true");
+    }
+
+    function clearNameError() {
+      document.getElementById("name-error").classList.remove("visible");
+      input.classList.remove("invalid");
+      input.removeAttribute("aria-invalid");
+    }
+
     const input = document.getElementById("rider-name");
     const params = new URLSearchParams(location.search);
     const fromUrl = params.get("rider") || params.get("name");
     const saved = loadSaved();
-    input.value = (fromUrl || saved.name || "").trim();
+    // Ne pré-remplir le localStorage que si le partage est déjà actif (retour coureur).
+    // Sinon on laisse vide pour éviter d'activer le pseudo d'un autre utilisateur du même téléphone.
+    input.value = (fromUrl || (saved.publish ? saved.name : "") || "").trim();
+
+    input.addEventListener("input", () => {
+      if (input.value.trim()) clearNameError();
+    });
 
     document.getElementById("btn-activate").addEventListener("click", () => {
       const name = input.value.trim();
       if (!name) {
+        showNameError("Choisis un pseudo pour activer le partage.");
         input.focus();
         return;
       }
+      clearNameError();
       if (!saveRider(name, true)) {
         alert("Impossible d'enregistrer le pseudo (stockage local bloqué).");
         return;
