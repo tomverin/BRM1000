@@ -68,7 +68,7 @@
   </header>
   <main>
 <h1>BRM 1000 CCK 2026 — Guide d&#x27;utilisation</h1>
-    <p>Companion <strong>jour J</strong> pour le parcours officiel (~1022 km, 100 % bitume).</p>
+    <p>Companion <strong>jour J</strong> pour le parcours officiel (~1021 km, 100 % bitume).</p>
     <p>Site : <strong>https://tomverin.github.io/BRM1000/</strong></p>
     <p>Cette application fonctionne <strong>hors ligne</strong> une fois chargée (PWA). Elle ne suit pas le GPS en continu : tu rafraîchis ta position quand tu en as besoin, pour préserver la batterie.</p>
     <hr>
@@ -80,6 +80,16 @@
     <li>Autorise la <strong>géolocalisation</strong> quand le navigateur le demande.</li>
     <li>Vérifie l&#x27;heure de départ affichée dans les checkpoints (utilisée pour les ETA horaires).</li>
     </ol>
+    <h3>Coureur : activer le partage de position</h3>
+    <p>Si tu fais partie de l&#x27;équipe qui <strong>partage</strong> sa position :</p>
+    <ol>
+    <li>Ouvre <strong>https://tomverin.github.io/BRM1000/coureur.html</strong> (une seule URL pour tous).</li>
+    <li><strong>Saisis ton pseudo</strong> (obligatoire — le champ n&#x27;est pas pré-rempli avec le pseudo d&#x27;un autre utilisateur du même téléphone).</li>
+    <li>Appuie sur <strong>Activer le partage et ouvrir l&#x27;app</strong>.</li>
+    <li>Ensuite, chaque <strong>Refresh GPS</strong> dans l&#x27;app publie ta position.</li>
+    </ol>
+    <p>Pour <strong>arrêter le partage</strong> : retourne sur <code>coureur.html</code> → <strong>Arrêter le partage</strong>.</p>
+    <p>Famille / support : ouvre directement <strong>https://tomverin.github.io/BRM1000/</strong> (pas besoin de <code>coureur.html</code>).</p>
     <hr>
     <h2>Les trois vues</h2>
     <p>Swipe horizontal <strong>sur l&#x27;écran principal</strong> (geste franc, ~130 px) ou onglets en haut :</p>
@@ -89,15 +99,15 @@
     </tr></thead><tbody>
     <tr>
     <td><strong>Glance</strong></td>
-    <td>Lecture rapide : km, prochain ravito, eau/solide/service, refresh GPS</td>
+    <td>Lecture rapide : km, prochain ravito, eau/solide/service, liste coureurs, refresh GPS ; puis checkpoints et POIs en scrollant</td>
     </tr>
     <tr>
     <td><strong>Carte</strong></td>
-    <td>Trace, position, tous les POI filtrés, checkpoints</td>
+    <td>Trace, position, POI filtrés, panneau coureurs, checkpoints</td>
     </tr>
     <tr>
     <td><strong>Profil</strong></td>
-    <td>Dénivelé et pente sur 20 km, le reste, ou tout le parcours</td>
+    <td>Dénivelé, pente, position + autres coureurs sur la courbe</td>
     </tr>
     </tbody></table>
     <p>Le swipe est désactivé sur la carte, les listes et le profil (scroll / pan carte sans changer de vue).</p>
@@ -107,28 +117,44 @@
     <li><strong>Refresh GPS</strong> (bouton principal en glance, ou panneau Position en vue carte) : enregistre un point, projette sur la trace, met à jour km, ratio et ETAs.</li>
     <li>Pas de suivi continu : chaque refresh = une <strong>consultation</strong> dans l&#x27;historique.</li>
     <li><strong>Hors trace</strong> : distance affichée en mètres ; reste sur la route pour le km course.</li>
-    <li>Badge 📍 en haut : état GPS (fix récent ou en attente).</li>
+    <li>Badge 📍 en haut (vues Carte / Profil) : état GPS (fix récent ou en attente).</li>
     </ul>
     <p><strong>Conseil</strong> : refresh au départ, puis régulièrement en roulant (toutes les 15–30 min). Après un long arrêt, un refresh suffit : l&#x27;app gère la pause automatiquement.</p>
+    <p><strong>Doublon</strong> : si tu refresh sans bouger, l&#x27;app peut afficher « Consultation ignorée (doublon) » pour le pacing — c&#x27;est normal. En <strong>mode coureur</strong>, la position est quand même republiée aux autres.</p>
     <hr>
-    <h2>Équipe (partage de position)</h2>
-    <p>Trois coureurs peuvent voir la position des autres sur la carte, <strong>sans compte</strong>.</p>
+    <h2>Coureurs / équipe (partage de position)</h2>
+    <p>Plusieurs coureurs peuvent se voir sur la trace, <strong>sans compte</strong>.</p>
     <h3>Mode visiteur (suivi seulement)</h3>
-    <p>Ouvre <strong>https://tomverin.github.io/BRM1000/</strong> — tu vois les coureurs sur la carte et dans le panneau <strong>Coureurs</strong>, mais <strong>ta position n&#x27;est jamais partagée</strong>. Idéal pour la famille ou le support.</p>
+    <p>Ouvre <strong>https://tomverin.github.io/BRM1000/</strong> — panneau <strong>Coureurs</strong> : tu vois les positions récentes, <strong>ta position n&#x27;est jamais partagée</strong>. Idéal pour la famille ou le support.</p>
     <h3>Mode coureur (partager sa position)</h3>
-    <ol>
-    <li>Ouvre <strong>https://tomverin.github.io/BRM1000/coureur.html</strong></li>
-    <li>Saisis ton pseudo → <strong>Activer le partage et ouvrir l&#x27;app</strong></li>
-    <li>Chaque <strong>Refresh GPS</strong> publie ta position aux autres</li>
-    </ol>
-    <p>Lien direct : <code>coureur.html?rider=tom</code></p>
-    <p>Pour <strong>arrêter le partage</strong> : bouton sur <code>coureur.html</code>.</p>
+    <p>Passage obligatoire par <strong>coureur.html</strong> (voir <a href="#coureur--activer-le-partage-de-position">Avant le départ</a>). Une fois activé :</p>
     <ul>
-    <li>Panneau <strong>Coureurs</strong> / <strong>Équipe</strong> (vue Glance + carte) : prénom, km sur la trace, délai depuis la dernière mise à jour</li>
-    <li>Marqueurs colorés sur la carte</li>
-    <li>Nécessite du <strong>réseau</strong> pour publier/recevoir (pas de sync offline)</li>
-    <li>Les positions sont visibles par toute personne disposant de l&#x27;app et de la salle partagée — usage entre amis sur la course uniquement</li>
+    <li>Le panneau s&#x27;intitule <strong>Équipe</strong> (au lieu de <strong>Coureurs</strong>).</li>
+    <li>Chaque <strong>Refresh GPS</strong> envoie ta position (lat/lon + horodatage).</li>
+    <li>Les autres coureurs apparaissent après leur dernier refresh.</li>
     </ul>
+    <h3>Où les voir</h3>
+    <table><thead><tr>
+    <th>Emplacement</th>
+    <th>Détail</th>
+    </tr></thead><tbody>
+    <tr>
+    <td><strong>Glance</strong></td>
+    <td>Liste compacte (3 visibles, défilement au-delà)</td>
+    </tr>
+    <tr>
+    <td><strong>Carte</strong></td>
+    <td>Liste en overlay (3 visibles, défilement) + pastilles colorées (3 lettres du pseudo)</td>
+    </tr>
+    <tr>
+    <td><strong>Profil</strong></td>
+    <td>Pastilles sur la courbe de dénivelé</td>
+    </tr>
+    </tbody></table>
+    <p><strong>Tri</strong> : du coureur le <strong>plus loin</strong> sur la trace au plus proche (km décroissant).</p>
+    <p><strong>Fraîcheur</strong> : délai depuis la dernière mise à jour affiché (« il y a X min »). Positions de plus de <strong>3 h</strong> disparaissent de la liste.</p>
+    <p><strong>Réseau</strong> : publication et lecture nécessitent une connexion ; pas de sync offline des positions.</p>
+    <p><strong>Confidentialité</strong> : toute personne avec l&#x27;app peut lire les positions tant que la course est active — usage privé entre participants uniquement.</p>
     <hr>
     <h2>Détection automatique des pauses</h2>
     <p>Pas de bouton pause à appuyer. L&#x27;algorithme analyse chaque segment entre deux refresh :</p>
@@ -152,7 +178,7 @@
     <p>Le modèle ignore les segments trop courts (&lt; 5 km ou &lt; 10 min) pour éviter le bruit GPS.</p>
     <hr>
     <h2>POIs (points d&#x27;intérêt)</h2>
-    <p><strong>~367 POI</strong> le long du parcours (OnRouteMap 3 parties + BPF/ravitos orga) :</p>
+    <p><strong>~387 POI</strong> le long du parcours (OnRouteMap 3 parties + BPF/ravitos orga) :</p>
     <ul>
     <li><strong>Eau</strong> : fontaines, cimetières (eau potable)</li>
     <li><strong>Solide</strong> : boulangeries, cafés, supermarchés, restauration rapide, BPF orga</li>
@@ -181,55 +207,57 @@
     <tr>
     <td>CP1</td>
     <td>Besançon</td>
-    <td>~154</td>
+    <td>~153</td>
     </tr>
     <tr>
     <td>CP2</td>
     <td>Château-Chalon</td>
-    <td>~289</td>
+    <td>~288</td>
     </tr>
     <tr>
     <td>CP3</td>
     <td>Brançion</td>
-    <td>~419</td>
+    <td>~418</td>
     </tr>
     <tr>
     <td>CP4</td>
     <td>Autun</td>
-    <td>~508</td>
+    <td>~507</td>
     </tr>
     <tr>
     <td>CP5</td>
     <td>Veselay</td>
-    <td>~616</td>
+    <td>~614</td>
     </tr>
     <tr>
     <td>CP6</td>
     <td>Alésia</td>
-    <td>~699</td>
+    <td>~697</td>
     </tr>
     <tr>
     <td>CP7</td>
     <td>Froideconche</td>
-    <td>~897</td>
+    <td>~896</td>
     </tr>
     <tr>
     <td>CP8</td>
     <td>Grand Ballon</td>
-    <td>~984</td>
+    <td>~983</td>
     </tr>
     <tr>
     <td>Arrivée</td>
     <td>—</td>
-    <td>~1022</td>
+    <td>~1021</td>
     </tr>
     </tbody></table>
     <p>Heures limites et temps de contrôle : <strong>fiche officielle BRM</strong> (l&#x27;app affiche des ETA indicatives, pas l&#x27;horaire réglementaire).</p>
     <hr>
     <h2>Outils</h2>
     <ul>
+    <li><strong>Mode coureur (partager)</strong> : lien vers <code>coureur.html</code> depuis le panneau Outils.</li>
     <li><strong>Raster / Vector</strong> : bascule moteur carte (Leaflet raster vs MapLibre vectoriel).</li>
     <li><strong>Pré-charger tuiles</strong> : cache offline pour la zone du parcours.</li>
+    <li><strong>Documentation</strong> : bouton 📖 ou <code>aide.html</code>.</li>
     <li><strong>Exporter historique</strong> : JSON des consultations (débrief post-course).</li>
     <li><strong>Nouvelle session</strong> : efface l&#x27;historique local (confirmation).</li>
     <li><strong>Effacer historique</strong> : idem sans relancer un GPS.</li>
@@ -241,7 +269,7 @@
     <li>Pas de suivi live permanent (choix batterie).</li>
     <li>Partage équipe : mise à jour uniquement à chaque refresh GPS (pas de tracking continu des autres).</li>
     <li>POI issus d&#x27;OpenStreetMap / OnRouteMap : <strong>vérifier sur place</strong> (horaires, eau réellement dispo).</li>
-    <li>Une seule trace : parcours <strong>non bouclé</strong> (1022 km linéaires).</li>
+    <li>Parcours ~1021 km linéaires (trace officielle juillet 2026).</li>
     <li>Détection de pause heuristique : micro-arrêts &lt; ~15 min peuvent encore influencer le ratio ; refresh espacés après un ravito aident.</li>
     </ul>
     <hr>
@@ -273,6 +301,22 @@
     <tr>
     <td>Trop de changements d&#x27;écran</td>
     <td>Swipe uniquement sur la zone glance centrale, geste plus long</td>
+    </tr>
+    <tr>
+    <td>Aucun coureur visible</td>
+    <td>Vérifier le réseau ; les autres doivent avoir activé <code>coureur.html</code> et fait un refresh GPS</td>
+    </tr>
+    <tr>
+    <td>Ma position n&#x27;est pas partagée</td>
+    <td>Passer par <code>coureur.html</code>, saisir un pseudo, activer le partage ; vérifier le réseau</td>
+    </tr>
+    <tr>
+    <td>Toast « Partage équipe indisponible »</td>
+    <td>Pas de réseau, ou base Firebase indisponible</td>
+    </tr>
+    <tr>
+    <td>Mauvais pseudo enregistré</td>
+    <td><code>coureur.html</code> → arrêter le partage, ressaisir le pseudo, réactiver</td>
     </tr>
     </tbody></table>
     <hr>
