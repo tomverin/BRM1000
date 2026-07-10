@@ -1527,13 +1527,13 @@ function formatCrewAgeS(ageS) {
 }
 
 function crewInitials(name) {
-  const parts = String(name || "")
+  const compact = String(name || "")
     .trim()
-    .split(/\s+/)
-    .filter(Boolean);
-  if (!parts.length) return "?";
-  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
-  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-zA-Z0-9]/g, "");
+  if (!compact) return "?";
+  return compact.slice(0, 3).toUpperCase();
 }
 
 
@@ -2531,9 +2531,9 @@ function crewInitials(name) {
     }
 
     function crewMarkerHtml(color, label) {
-      return '<div style="width:26px;height:26px;border-radius:50%;background:' + color +
+      return '<div style="width:30px;height:30px;border-radius:50%;background:' + color +
         ';border:2px solid #0f1419;color:#0f1419;display:flex;align-items:center;justify-content:center;' +
-        'font-weight:900;font-size:10px;box-shadow:0 0 0 2px rgba(255,255,255,0.35),0 2px 6px rgba(0,0,0,0.7);">' +
+        'font-weight:900;font-size:8px;letter-spacing:-0.4px;line-height:1;box-shadow:0 0 0 2px rgba(255,255,255,0.35),0 2px 6px rgba(0,0,0,0.7);">' +
         escapeHtml(label) + '</div>';
     }
 
@@ -2571,8 +2571,8 @@ function crewInitials(name) {
             const icon = L.divIcon({
               className: "",
               html: crewMarkerHtml(color, label),
-              iconSize: [26, 26],
-              iconAnchor: [13, 13],
+              iconSize: [30, 30],
+              iconAnchor: [15, 15],
             });
             marker = L.marker([rider.lat, rider.lon], { icon, zIndexOffset: 900 })
               .bindPopup(popupHtml)
